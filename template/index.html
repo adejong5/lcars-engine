@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LCARS | System Name</title>
+  <link rel="stylesheet" href="../shared/lcars.css">
+
+  <!-- Site-specific color overrides (optional) — remove what you don't change -->
+  <style>
+    :root {
+      --lcars-c-header:  var(--lcars-orange);
+      --lcars-c-tl:      var(--lcars-orange);
+      --lcars-c-sidebar: var(--lcars-orange);
+      --lcars-c-bl:      var(--lcars-purple);
+      --lcars-c-footer:  var(--lcars-purple);
+    }
+  </style>
+</head>
+<body>
+
+<div class="lcars-page">
+
+  <!-- ── TOP-LEFT ELBOW ─────────────────────────────────────── -->
+  <div class="lcars-elbow-tl"></div>
+
+  <!-- ── HEADER BAR ────────────────────────────────────────── -->
+  <header class="lcars-header">
+    <span class="lcars-header__title">System Name</span>
+    <span class="lcars-header__spacer"></span>
+    <div class="lcars-header__right">
+      <span class="lcars-status">
+        <span class="lcars-dot lcars-dot--blink"></span>
+        Online
+      </span>
+      <span class="lcars-stardate" id="stardate">STARDATE —</span>
+    </div>
+  </header>
+
+  <!-- ── LEFT SIDEBAR ──────────────────────────────────────── -->
+  <!-- Segments fill the sidebar with colored blocks + optional labels.
+       Add/remove segments and change colors to match your site's sections.
+       Classes: --sm (18px), --md (40px), --lg (80px), or leave flex:1 (fills) -->
+  <nav class="lcars-sidebar">
+    <div class="lcars-segment lcars-segment--sm"></div>
+    <div class="lcars-segment lcars-segment--orange"><span>Main</span></div>
+    <div class="lcars-segment lcars-segment--sm"></div>
+    <div class="lcars-segment lcars-segment--tan"></div>
+    <div class="lcars-segment lcars-segment--sm"></div>
+    <div class="lcars-segment lcars-segment--peach"><span>Data</span></div>
+    <div class="lcars-segment lcars-segment--sm"></div>
+  </nav>
+
+  <!-- ── CONTENT AREA ──────────────────────────────────────── -->
+  <!-- Everything below goes here. Use .lcars-bar for section headers,
+       .lcars-panel for grouped info, .lcars-grid--N for columns, etc. -->
+  <main class="lcars-content">
+
+    <!-- Section header bar -->
+    <div class="lcars-bar">
+      <span class="lcars-bar__label">Overview</span>
+      <span class="lcars-bar__spacer"></span>
+      <span class="lcars-bar__label" id="last-updated">—</span>
+    </div>
+
+    <!-- Two-column grid example -->
+    <div class="lcars-grid lcars-grid--2">
+
+      <!-- Panel 1 -->
+      <div class="lcars-panel">
+        <div class="lcars-panel__title">Entity Name</div>
+        <div class="lcars-data">
+          <span class="lcars-data__label">Value</span>
+          <span class="lcars-data__value" id="val-1">
+            —<span class="lcars-data__unit">unit</span>
+          </span>
+        </div>
+        <div class="lcars-divider"></div>
+        <div class="lcars-progress">
+          <div class="lcars-progress__track">
+            <div class="lcars-progress__fill" id="prog-1" style="width:0%"></div>
+          </div>
+          <span class="lcars-progress__label" id="prog-1-label">0%</span>
+        </div>
+      </div>
+
+      <!-- Panel 2 -->
+      <div class="lcars-panel lcars-panel--blue">
+        <div class="lcars-panel__title">Another Entity</div>
+        <div class="lcars-data">
+          <span class="lcars-data__label">State</span>
+          <span class="lcars-data__value" id="val-2">—</span>
+        </div>
+      </div>
+
+    </div><!-- /.lcars-grid--2 -->
+
+    <!-- Section header bar -->
+    <div class="lcars-bar lcars-bar--purple">
+      <span class="lcars-bar__label">Status</span>
+    </div>
+
+    <!-- Entity list example -->
+    <div class="lcars-panel">
+      <div class="lcars-entity">
+        <span class="lcars-entity__label">sensor.example_1</span>
+        <span class="lcars-entity__value" id="ent-1">—</span>
+      </div>
+      <div class="lcars-entity">
+        <span class="lcars-entity__label">sensor.example_2</span>
+        <span class="lcars-entity__value" id="ent-2">—</span>
+      </div>
+      <div class="lcars-entity">
+        <span class="lcars-entity__label">binary_sensor.example</span>
+        <span class="lcars-entity__value lcars-entity__value--on" id="ent-3">—</span>
+      </div>
+    </div>
+
+    <!-- Block meter example -->
+    <div class="lcars-bar lcars-bar--yellow">
+      <span class="lcars-bar__label">Activity</span>
+    </div>
+    <div class="lcars-panel">
+      <div class="lcars-label" style="margin-bottom:6px">Signal Level</div>
+      <div class="lcars-meter" id="meter-1">
+        <span></span><span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+
+  </main><!-- /.lcars-content -->
+
+  <!-- ── BOTTOM-LEFT ELBOW ──────────────────────────────────── -->
+  <div class="lcars-elbow-bl"></div>
+
+  <!-- ── FOOTER BAR ────────────────────────────────────────── -->
+  <footer class="lcars-footer">
+    <span class="lcars-footer__left">LCARS 47</span>
+    <span class="lcars-footer__spacer"></span>
+    <span class="lcars-footer__right" id="conn-status">CONNECTING…</span>
+  </footer>
+
+</div><!-- /.lcars-page -->
+
+<script type="module">
+  import { HAClient, getStardate } from '../shared/ha-websocket.js';
+
+  // ── Configuration ──────────────────────────────────────────
+  // Set your HA host and long-lived access token here.
+  // Create a token at: HA → Profile → Long-Lived Access Tokens
+  const HA_HOST  = '192.168.1.100'; // or 'homeassistant.local'
+  const HA_TOKEN = 'YOUR_LONG_LIVED_ACCESS_TOKEN';
+
+  // ── Stardate ticker ────────────────────────────────────────
+  function updateStardate() {
+    document.getElementById('stardate').textContent =
+      `STARDATE ${getStardate()}`;
+  }
+  updateStardate();
+  setInterval(updateStardate, 60_000);
+
+  // ── HA Connection ──────────────────────────────────────────
+  const ha = new HAClient({ host: HA_HOST, token: HA_TOKEN });
+
+  try {
+    await ha.connect();
+    document.getElementById('conn-status').textContent = 'ONLINE';
+
+    // ── Load initial states ──────────────────────────────────
+    // Get a state once:
+    // const state = await ha.getState('sensor.my_sensor');
+    // document.getElementById('val-1').firstChild.textContent = state?.state ?? '—';
+
+    // ── Subscribe to live updates ────────────────────────────
+    // Replace entity IDs with your own. The callback fires on every change.
+    //
+    // await ha.onStateChange('sensor.my_sensor', (state) => {
+    //   document.getElementById('val-1').firstChild.textContent = state.state;
+    //   setProgress('prog-1', 'prog-1-label', parseFloat(state.state), 100);
+    // });
+    //
+    // await ha.onStateChange('light.living_room', (state) => {
+    //   const el = document.getElementById('val-2');
+    //   el.textContent = state.state;
+    //   el.className = `lcars-data__value lcars-entity__value--${state.state}`;
+    // });
+
+    // Update footer with last-seen time
+    const updateTimestamp = () => {
+      const now = new Date();
+      document.getElementById('last-updated').textContent =
+        now.toLocaleTimeString('en-US', { hour12: false });
+    };
+    updateTimestamp();
+    setInterval(updateTimestamp, 1000);
+
+  } catch (err) {
+    console.error('HA connection failed:', err);
+    document.getElementById('conn-status').textContent = 'OFFLINE';
+    document.querySelector('.lcars-dot').className = 'lcars-dot lcars-dot--alert';
+  }
+
+  // ── Utility helpers ────────────────────────────────────────
+
+  /** Set a .lcars-progress bar to a fraction (0–max). */
+  function setProgress(fillId, labelId, value, max) {
+    const pct = Math.round(Math.min(Math.max(value / max * 100, 0), 100));
+    document.getElementById(fillId).style.width  = `${pct}%`;
+    document.getElementById(labelId).textContent = `${pct}%`;
+  }
+
+  /** Set a .lcars-meter to active state based on value 0–max. */
+  function setMeter(meterId, value, max) {
+    const cells = document.querySelectorAll(`#${meterId} span`);
+    const active = Math.round(value / max * cells.length);
+    cells.forEach((c, i) => c.classList.toggle('active', i < active));
+  }
+</script>
+
+</body>
+</html>

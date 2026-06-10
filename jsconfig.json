@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "bundler",
+    "target": "ESNext",
+    "paths": {
+      "$shared/*": ["./shared/*"]
+    }
+  },
+  "include": ["shared", "sites"]
+}
