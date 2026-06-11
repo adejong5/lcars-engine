@@ -12,9 +12,11 @@
    *
    * Props:
    *   values   — list of entities to display; each item is an entity_id
-   *              string or { entity, format } where format(stateString)
-   *              returns the display text. Cells show random digits until
-   *              the entity's state arrives, and '----' when HA reports it
+   *              string or { entity, format, cls } where format(stateString)
+   *              returns the display text and cls(stateString) returns
+   *              extra classes for the cell (e.g. 'font-red blink' above a
+   *              threshold). Cells show random digits until the entity's
+   *              state arrives, and '----' when HA reports it
    *              unavailable/unknown.
    *   columns  — total column count to pad to with random filler
    *              (default 24, the original template's density)
@@ -29,7 +31,7 @@
 
   import { ha } from '../ha.svelte.js';
 
-  /** @type {{ values?: Array<string | {entity: string, format?: (state: string) => string}>, columns?: number, filler?: number, theme?: 'classic'|'nemesis'|'lower-decks'|'padd', pattern?: number[], frozen?: boolean, wrapperClass?: string }} */
+  /** @type {{ values?: Array<string | {entity: string, format?: (state: string) => string, cls?: (state: string) => string}>, columns?: number, filler?: number, theme?: 'classic'|'nemesis'|'lower-decks'|'padd', pattern?: number[], frozen?: boolean, wrapperClass?: string }} */
   let {
     values = null,
     columns = 24,
@@ -98,7 +100,7 @@
     const cells = (values ?? []).map(v =>
       typeof v === 'string'
         ? { entity: v, ...randomCell() }
-        : { entity: v.entity, format: v.format, ...randomCell() }
+        : { entity: v.entity, format: v.format, cls: v.cls, ...randomCell() }
     );
 
     const valueCols = Math.ceil(cells.length / rows);
@@ -128,6 +130,12 @@
     if (raw === 'unavailable' || raw === 'unknown') return '----';
     return cell.format ? cell.format(raw) : raw;
   }
+
+  function extraClass(cell) {
+    if (!cell.cls || !cell.entity) return '';
+    const raw = ha.state(cell.entity);
+    return raw == null ? '' : (cell.cls(raw) ?? '');
+  }
 </script>
 
 <div class={wrapperClass} id={frozen ? 'frozen' : 'default'}>
@@ -135,7 +143,7 @@
     <div class="data-column">
       {#each column as cell, i}
         <div
-          class="dc-row-{pattern[i]} {cell.font ?? ''}"
+          class="dc-row-{pattern[i]} {cell.font ?? ''} {extraClass(cell)}"
           class:darkspace={cell.dark}
           class:darkfont={cell.darkFont}
         >{display(cell)}{#if cell.extra}<span class="hide-data">{cell.extra}</span>{/if}</div>
