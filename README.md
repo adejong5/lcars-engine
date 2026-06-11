@@ -34,7 +34,7 @@ This repo is set up to be driven by an AI coding agent (it ships a `CLAUDE.md`, 
 
    > Make me a new site called "engineering" using the nemesis theme. Banner "USS PANDA — ENGINEERING". The data cascade should show my power sensors (sensor.solar_power, sensor.grid_power, sensor.battery_soc). Main content: a bar titled "Power Systems", an accordion per room with its temperature and humidity, and red-alert styling on binary_sensor.water_leak.
 
-3. The agent scaffolds `sites/engineering/` (three small files), registers it in `vite.config.js`, and composes the page from the shared components with your entity ids wired into the reactive store.
+3. The agent scaffolds `sites/engineering/` (three small files — every `sites/*/index.html` is auto-discovered by the build) and composes the page from the shared components with your entity ids wired into the reactive store.
 4. **Preview offline** with `npm run dev` — without HA credentials every entity gets mock data, so the page is fully alive immediately.
 5. **Connect it to Home Assistant** by creating `.env.local`:
 

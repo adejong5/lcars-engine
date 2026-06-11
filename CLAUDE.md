@@ -18,9 +18,13 @@ A Svelte 5 + Vite re-implementation of the thelcars.com LCARS website template, 
 
 ### Multi-site MPA
 
-Each site lives in `sites/<name>/` with three files: `index.html`, `main.js` (mounts the app, picks a theme CSS, calls `initHA`), and `App.svelte`. **Creating a new site requires registering its `index.html` in `build.rollupOptions.input` in `vite.config.js`**, and optionally adding a link in the root `index.html` (the site directory page).
+Each site is three files: `index.html`, `main.js` (mounts the app, picks a theme CSS, calls `initHA`), and `App.svelte`. Vite auto-discovers every `sites/*/index.html` and `private/*/index.html` as a build entry — no registration needed. Optionally add public sites to the root `index.html` (the site directory page).
 
 `$shared` is a Vite alias for `./shared` (also mapped in `jsconfig.json`).
+
+### Two repos: public engine, private dashboards
+
+`private/` is a **separate git repo** (`adejong5/lcars-engine-deployments`, private) nested in this working copy and gitignored by the public repo. Real dashboards connected to the user's Home Assistant go in `private/<name>/`; demo/documentation sites go in `sites/<name>/`. Commit dashboard work inside `private/` (its own git history), engine/component work at the root. Never list private sites in the root `index.html` — it's published to GitHub Pages. Local builds (`dist/`) include the private sites plus the `.env.local` HA credentials baked in; they're served on the LAN via an nginx bind-mount and must never be published.
 
 ### Theme system — class names are load-bearing
 

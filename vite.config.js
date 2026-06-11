@@ -1,6 +1,19 @@
 import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import path from 'path';
+import fs from 'fs';
+
+// Every <dir>/<name>/index.html is a site — no manual registration needed.
+// `sites/` holds the public demos; `private/` is the gitignored clone of the
+// lcars-engine-deployments repo and may be absent (e.g. on CI).
+function siteEntries(dir) {
+  if (!fs.existsSync(dir)) return {};
+  return Object.fromEntries(
+    fs.readdirSync(dir)
+      .filter(name => fs.existsSync(path.resolve(dir, name, 'index.html')))
+      .map(name => [`${dir}-${name}`, path.resolve(dir, name, 'index.html')])
+  );
+}
 
 export default defineConfig({
   plugins: [svelte()],
@@ -25,10 +38,9 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        // Add a new entry here for each site you create.
         index: path.resolve('./index.html'),
-        test: path.resolve('./sites/test/index.html'),
-        padd: path.resolve('./sites/padd/index.html')
+        ...siteEntries('sites'),
+        ...siteEntries('private')
       }
     }
   }
