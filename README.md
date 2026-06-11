@@ -50,6 +50,13 @@ This repo is set up to be driven by an AI coding agent (it ships a `CLAUDE.md`, 
 It's ordinary Svelte if you'd rather write it yourself — copy `sites/padd/` as a starting point, and use the [component documentation site](https://adejong5.github.io/lcars-engine/sites/test/) (source: `sites/test/App.svelte`) as the reference for every component and its props.
 
 ## Credits
+This project is a heavily modified, Svelte + Vite-based extension of the LCARS Inspired Website Template originally created by Jim Robertus (www.TheLCARS.com).
 
-- LCARS design, theme CSS, and sounds: [LCARS Inspired Website Template by www.TheLCARS.com](https://www.thelcars.com)
-- LCARS is the iconic computer interface from Star Trek, designed by Michael Okuda. This is a fan project, not affiliated with CBS/Paramount.
+This project is a non-commercial fan production. *Star Trek* and all related marks, logos, and characters are solely owned by CBS Studios Inc. This fan production is not endorsed by, sponsored by, nor affiliated with CBS, Paramount Pictures, or any other *Star Trek* franchise. 
+
+No commercial exhibition or distribution is permitted. No alleged independent rights will be asserted against CBS or Paramount Pictures. This work is intended for personal and recreational use only.
+
+The *Antonio* font is designed by Vernon Adams and is free to use in accordance with the SIL Open Font License, Version 1.1.
+
+> [!IMPORTANT]
+> By using, copying, or modifying this repository, you agree to be bound by the original End-User License Agreement (EULA) of the upstream template, alongside the additional attribution requirements for this Svelte/Vite extension. See [LICENSE.md](LICENSE.md) for more information.
