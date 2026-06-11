@@ -15,9 +15,11 @@
    *              string or { entity, format, cls } where format(stateString)
    *              returns the display text and cls(stateString) returns
    *              extra classes for the cell (e.g. 'font-red blink' above a
-   *              threshold). Cells show random digits until the entity's
-   *              state arrives, and '----' when HA reports it
-   *              unavailable/unknown.
+   *              threshold). { text } makes a static cell instead (e.g. a
+   *              column label; '' for an empty cell). Entity cells show
+   *              random digits until the state arrives, and '----' when HA
+   *              reports it unavailable/unknown. Values fill column-major,
+   *              so with pattern [1,2,3,4] every 4 items form one column.
    *   columns  — total column count to pad to with random filler
    *              (default 24, the original template's density)
    *   filler   — exact number of random filler columns, overriding the
@@ -31,7 +33,7 @@
 
   import { ha } from '../ha.svelte.js';
 
-  /** @type {{ values?: Array<string | {entity: string, format?: (state: string) => string, cls?: (state: string) => string}>, columns?: number, filler?: number, theme?: 'classic'|'nemesis'|'lower-decks'|'padd', pattern?: number[], frozen?: boolean, wrapperClass?: string }} */
+  /** @type {{ values?: Array<string | {entity?: string, format?: (state: string) => string, cls?: (state: string) => string, text?: string}>, columns?: number, filler?: number, theme?: 'classic'|'nemesis'|'lower-decks'|'padd', pattern?: number[], frozen?: boolean, wrapperClass?: string }} */
   let {
     values = null,
     columns = 24,
@@ -97,11 +99,11 @@
   // Column model: cell = { entity?, format?, seed, extra?, dark?, darkFont? }.
   // Built once per values/filler change; live updates flow through display().
   const cols = $derived.by(() => {
-    const cells = (values ?? []).map(v =>
-      typeof v === 'string'
-        ? { entity: v, ...randomCell() }
-        : { entity: v.entity, format: v.format, cls: v.cls, ...randomCell() }
-    );
+    const cells = (values ?? []).map(v => {
+      if (typeof v === 'string') return { entity: v, ...randomCell() };
+      if (v.text != null) return { text: v.text };
+      return { entity: v.entity, format: v.format, cls: v.cls, ...randomCell() };
+    });
 
     const valueCols = Math.ceil(cells.length / rows);
     while (cells.length < valueCols * rows) cells.push(randomCell());
@@ -124,6 +126,7 @@
   });
 
   function display(cell) {
+    if (cell.text != null) return cell.text;
     if (!cell.entity) return cell.seed;
     const raw = ha.state(cell.entity);
     if (raw == null) return cell.seed;

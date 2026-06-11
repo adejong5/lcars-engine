@@ -139,7 +139,7 @@
     cells — the cascade above carries twelve mock sensors.
   </p>
   <ul class="lcars-list">
-    <li><span class="code">values</span> — entity_id strings or {'{ entity, format, cls }'} objects; <span class="code">format(state)</span> maps the display text, <span class="code">cls(state)</span> adds conditional classes (e.g. <span class="code">'font-red blink'</span> above a threshold); cells show random digits until the state arrives, '----' if unavailable.</li>
+    <li><span class="code">values</span> — entity_id strings or {'{ entity, format, cls }'} objects; <span class="code">format(state)</span> maps the display text, <span class="code">cls(state)</span> adds conditional classes (e.g. <span class="code">'font-red blink'</span> above a threshold); <span class="code">{'{ text }'}</span> makes a static cell (column labels, '' for blanks). Values fill column-major. Entity cells show random digits until the state arrives, '----' if unavailable.</li>
     <li><span class="code">columns</span> — total column count to pad to with random filler (default 24).</li>
     <li><span class="code">filler</span> — exact filler column count instead; 0 = values only.</li>
     <li><span class="code">theme</span> — matches the page theme; sets row pattern and wrapper class (lower-decks/padd get hidden digits and dark filler columns).</li>
