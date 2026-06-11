@@ -13,8 +13,15 @@
    *                   right-frame (bar-panel 6-10, main, footer)
    *
    * Props:
-   *   theme       — 'classic' | 'nemesis' | 'lower-decks'; controls the
-   *                 wrapper class
+   *   theme       — 'classic' | 'nemesis' | 'lower-decks' | 'padd';
+   *                 controls wrapper class, bar-panel segment count, the
+   *                 padd divider block, and sidebar defaults. Import the
+   *                 matching CSS in main.js (padd = lower-decks-padd.css).
+   *   layout      — 'standard' (default) | 'ultra'. Ultra wraps the page
+   *                 in the three-column wrap-everything layout from the
+   *                 original ultra templates, adding decorative column-1
+   *                 and column-2 to the left (classic and nemesis only —
+   *                 the lower-decks CSS has no ultra classes).
    *   banner      — top banner text
    *   topPanel    — { label?, href? } for the big top-left panel button;
    *                 label defaults to 'LCARS', omit href for a decorative
@@ -28,16 +35,24 @@
    *              and/or <NavButtons>
    *   sidebar  — content for the left sidebar, typically <SidePanels>;
    *              defaults to <SidePanels /> (7 auto-filler panels + bottom)
+   *   column1  — ultra only: far-left column content; defaults to the
+   *              template's <LCARSFrame> + <Pillbox> + status list +
+   *              <Pillbox variant={2}>
+   *   column2  — ultra only: narrow second column content; defaults to
+   *              the template's panels 11–15 with three sidebar buttons
    *   children — main content
    *   footer   — replaces the default footer text (attribution kept)
    */
 
   import SidePanels from './SidePanels.svelte';
+  import LCARSFrame from './LCARSFrame.svelte';
+  import Pillbox from './Pillbox.svelte';
   import { playBeep, playBeepAndGo } from '../sounds.js';
 
-  /** @type {{ theme?: 'classic'|'nemesis'|'lower-decks', banner?: string, topPanel?: {label: string, href?: string}, panel2?: {label: string, hop?: string}, sounds?: boolean, floorText?: string, topFrame?: import('svelte').Snippet, sidebar?: import('svelte').Snippet, children?: import('svelte').Snippet, footer?: import('svelte').Snippet }} */
+  /** @type {{ theme?: 'classic'|'nemesis'|'lower-decks'|'padd', layout?: 'standard'|'ultra', banner?: string, topPanel?: {label: string, href?: string}, panel2?: {label: string, hop?: string}, sounds?: boolean, floorText?: string, topFrame?: import('svelte').Snippet, sidebar?: import('svelte').Snippet, column1?: import('svelte').Snippet, column2?: import('svelte').Snippet, children?: import('svelte').Snippet, footer?: import('svelte').Snippet }} */
   let {
     theme = 'classic',
+    layout = 'standard',
     banner = 'LCARS • 47988',
     topPanel = {},
     panel2 = { label: '02', hop: '-262000' },
@@ -45,11 +60,25 @@
     floorText,
     topFrame,
     sidebar,
+    column1,
+    column2,
     children,
     footer
   } = $props();
 
-  const isLowerDecks = theme === 'lower-decks';
+  // reactive so a site can switch layouts at runtime
+  const ultra = $derived(layout === 'ultra');
+  // default ultra column-2 buttons; labels/colors from the original templates
+  const sideButtons = theme === 'nemesis'
+    ? [['JS2B-01', 'button-evening'], ['JS2B-02', 'button-moonbeam'], ['MS2B-03', 'button-evening']]
+    : [['JS2B-01', 'button-almond-creme'], ['JS2B-02', 'button-butterscotch'], ['MS2B-03', 'button-african-violet']];
+
+  const isPadd = theme === 'padd';
+  // lower-decks and padd use the wrap-all wrapper
+  const wrapAll = theme === 'lower-decks' || isPadd;
+  // lower-decks bar panels have 4 segments; classic/nemesis/padd have 5
+  const topBars = theme === 'lower-decks' ? [1, 2, 3, 4] : [1, 2, 3, 4, 5];
+  const bottomBars = theme === 'lower-decks' ? [6, 7, 8, 9] : [6, 7, 8, 9, 10];
 
   let scrollY = $state(0);
 
@@ -67,10 +96,7 @@
 
 <svelte:window bind:scrollY />
 
-<svelte:element this={isLowerDecks ? 'div' : 'section'}
-  class={isLowerDecks ? 'wrap-all' : 'wrap-standard'}
-  id={isLowerDecks ? undefined : 'column-3'}>
-
+{#snippet pageFrame()}
   <div class="wrap">
     <div class="left-frame-top">
       <button onclick={() => nav(topPanel.href)} class="panel-1-button">{topPanel.label ?? 'LCARS'}</button>
@@ -82,14 +108,28 @@
         {@render topFrame?.()}
       </div>
       <div class="bar-panel first-bar-panel">
-        <div class="bar-1"></div>
-        <div class="bar-2"></div>
-        <div class="bar-3"></div>
-        <div class="bar-4"></div>
-        <div class="bar-5"></div>
+        {#each topBars as n}
+          <div class="bar-{n}"></div>
+        {/each}
       </div>
     </div>
   </div>
+
+  {#if isPadd}
+    <div class="divider">
+      <div class="block-left"></div>
+      <div class="block-right">
+        <div class="block-row">
+          <div class="bar-11"></div>
+          <div class="bar-12"></div>
+          <div class="bar-13"></div>
+          <div class="bar-14">
+            <div class="blockhead"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {/if}
 
   <div class="wrap" id="gap">
     <div class="left-frame">
@@ -100,16 +140,14 @@
       {#if sidebar}
         {@render sidebar()}
       {:else}
-        <SidePanels {sounds} />
+        <SidePanels {theme} {sounds} />
       {/if}
     </div>
     <div class="right-frame">
       <div class="bar-panel">
-        <div class="bar-6"></div>
-        <div class="bar-7"></div>
-        <div class="bar-8"></div>
-        <div class="bar-9"></div>
-        <div class="bar-10"></div>
+        {#each bottomBars as n}
+          <div class="bar-{n}"></div>
+        {/each}
       </div>
       <main>
         {@render children?.()}
@@ -126,8 +164,57 @@
       </footer>
     </div>
   </div>
+{/snippet}
 
-</svelte:element>
+{#if ultra}
+  <div class="wrap-everything">
+    <section id="column-1">
+      {#if column1}
+        {@render column1()}
+      {:else}
+        <LCARSFrame horizontal={theme === 'nemesis'} />
+        <Pillbox {sounds} />
+        <div class="lcars-list-2 uppercase">
+          <ul>
+            <li>Subspace Link: Established</li>
+            <li>Starfleet Database: Connected</li>
+            <li>Quantum Memory Field: stable</li>
+            <li class={theme === 'nemesis'
+              ? 'bullet-moonbeam font-moonbeam'
+              : 'bullet-almond-creme font-almond-creme'}>Optical Data Network: rerouting</li>
+          </ul>
+        </div>
+        <Pillbox variant={2} {sounds} pills={[
+          { label: 'F12-22' }, { label: 'G24-22' }, { spacer: true },
+          { label: 'H-07AM' }, { label: 'I50-72' }, { label: 'J5369' }
+        ]} />
+      {/if}
+    </section>
+    <section id="column-2">
+      {#if column2}
+        {@render column2()}
+      {:else}
+        <div class="panel-11">11-1524</div>
+        {#each sideButtons as [label, color]}
+          <button onclick={() => nav()} class="sidebar-button {color}">{label}</button>
+        {/each}
+        <div class="panel-12">12-0730</div>
+        <div class="panel-13">13-318</div>
+        <div class="panel-14">14-DL44</div>
+        <div class="panel-15">15-3504</div>
+      {/if}
+    </section>
+    <section id="column-3">
+      {@render pageFrame()}
+    </section>
+  </div>
+{:else}
+  <svelte:element this={wrapAll ? 'div' : 'section'}
+    class={wrapAll ? 'wrap-all' : 'wrap-standard'}
+    id={wrapAll ? undefined : 'column-3'}>
+    {@render pageFrame()}
+  </svelte:element>
+{/if}
 
 <div class="headtrim"></div>
 <div class="baseboard"></div>

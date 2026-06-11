@@ -22,7 +22,9 @@ export default defineConfig({
     rollupOptions: {
       input: {
         // Add a new entry here for each site you create.
-        test: path.resolve('./sites/test/index.html')
+        index: path.resolve('./index.html'),
+        test: path.resolve('./sites/test/index.html'),
+        padd: path.resolve('./sites/padd/index.html')
       }
     }
   }

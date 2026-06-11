@@ -17,15 +17,22 @@
    *              hop   — small suffix; auto-generated digits when omitted,
    *                      '' to suppress
    *              href  — renders the panel as a link (with beep)
-   *   bottomPanel — same shape for the pinned panel-10 block; true for
+   *   bottomPanel — same shape for the pinned bottom block; true for
    *                 auto filler (default), false to omit
+   *   theme  — 'padd' cycles panel-3…panel-6 with panel-7 pinned at the
+   *            bottom (the padd CSS only defines panels up to 7); other
+   *            themes cycle panel-3…panel-9 with panel-10 at the bottom
    *   sounds — false to disable the beep on link panels
    */
 
   import { playBeepAndGo } from '../sounds.js';
 
-  /** @type {{ panels?: number | Array<{label?: string, hop?: string, href?: string}>, bottomPanel?: boolean | {label?: string, hop?: string, href?: string}, sounds?: boolean }} */
-  let { panels = 7, bottomPanel = true, sounds = true } = $props();
+  /** @type {{ panels?: number | Array<{label?: string, hop?: string, href?: string}>, bottomPanel?: boolean | {label?: string, hop?: string, href?: string}, theme?: string, sounds?: boolean }} */
+  let { panels, bottomPanel = true, theme = 'classic', sounds = true } = $props();
+
+  const cycle = theme === 'padd' ? 4 : 7; // panel-3..6 vs panel-3..9
+  const bottomClass = theme === 'padd' ? 'panel-7' : 'panel-10';
+  panels ??= cycle;
 
   function randomHop() {
     let s = '-';
@@ -38,7 +45,7 @@
       label: p.label ?? String(i + 3).padStart(2, '0'),
       hop: p.hop ?? randomHop(),
       href: p.href,
-      cls: `panel-${3 + (i % 7)}`
+      cls: `panel-${3 + (i % cycle)}`
     };
   }
 
@@ -49,10 +56,10 @@
 
   const bottom = bottomPanel
     ? {
-        label: bottomPanel.label ?? '10',
+        label: bottomPanel.label ?? String(cycle + 3).padStart(2, '0'),
         hop: bottomPanel.hop ?? randomHop(),
         href: bottomPanel.href,
-        cls: 'panel-10'
+        cls: bottomClass
       }
     : null;
 

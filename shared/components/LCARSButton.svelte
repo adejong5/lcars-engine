@@ -16,12 +16,14 @@
    *   variant — see above
    *   pan     — panel number for variant 'panel'
    *   sounds  — false to disable the beep
+   *   onclick — click handler (e.g. an ha.callService call); runs before
+   *             the beep/navigation
    */
 
   import { playBeepAndGo } from '../sounds.js';
 
-  /** @type {{ label?: string, href?: string, color?: string, variant?: 'sidebar'|'panel', pan?: number, sounds?: boolean, children?: import('svelte').Snippet }} */
-  let { label, href, color, variant, pan, sounds = true, children } = $props();
+  /** @type {{ label?: string, href?: string, color?: string, variant?: 'sidebar'|'panel', pan?: number, sounds?: boolean, onclick?: (e: MouseEvent) => void, children?: import('svelte').Snippet }} */
+  let { label, href, color, variant, pan, sounds = true, onclick, children } = $props();
 
   const cls = [
     variant === 'sidebar' ? 'sidebar-button' : variant === 'panel' ? 'panel-button' : 'lcars-button',
@@ -30,6 +32,7 @@
   ].filter(Boolean).join(' ');
 
   function click(e) {
+    onclick?.(e);
     if (!sounds) return;
     e.preventDefault();
     playBeepAndGo(2, href ?? '#');

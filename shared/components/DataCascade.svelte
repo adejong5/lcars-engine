@@ -29,7 +29,7 @@
 
   import { ha } from '../ha.svelte.js';
 
-  /** @type {{ values?: Array<string | {entity: string, format?: (state: string) => string}>, columns?: number, filler?: number, theme?: 'classic'|'nemesis'|'lower-decks', pattern?: number[], frozen?: boolean, wrapperClass?: string }} */
+  /** @type {{ values?: Array<string | {entity: string, format?: (state: string) => string}>, columns?: number, filler?: number, theme?: 'classic'|'nemesis'|'lower-decks'|'padd', pattern?: number[], frozen?: boolean, wrapperClass?: string }} */
   let {
     values = null,
     columns = 24,
@@ -40,36 +40,83 @@
     wrapperClass
   } = $props();
 
-  pattern ??= theme === 'lower-decks' ? [1, 2, 3, 4] : [1, 1, 2, 3, 3, 4, 5, 6, 7];
-  wrapperClass ??= theme === 'lower-decks' ? 'data-wrapper' : 'data-cascade-wrapper';
+  const isPadd = theme === 'padd';
+  const isLowerDecks = theme === 'lower-decks' || isPadd;
+
+  pattern ??= isLowerDecks ? [1, 2, 3, 4] : [1, 1, 2, 3, 3, 4, 5, 6, 7];
+  wrapperClass ??= isLowerDecks ? 'data-wrapper' : 'data-cascade-wrapper';
 
   const rows = pattern.length;
 
-  function randomCell() {
-    const len = 1 + Math.floor(Math.random() * 7);
+  // padd cells sprinkle these font colors across the cascade
+  const paddFonts = ['font-arctic-ice', 'font-night-rain', 'font-alpha-blue'];
+
+  function digits(len) {
     let s = '';
     for (let i = 0; i < len; i++) s += Math.floor(Math.random() * 10);
     return s;
   }
 
-  // Column model: cell = { entity?, format?, seed }. Built once per
-  // values/filler change; live updates flow through display() instead.
+  function randomCell() {
+    if (isPadd) {
+      // padd mixes short cells, 7-digit, and 11-digit columns, with
+      // random font colors on roughly half the cells
+      const lens = [2, 2, 2, 3, 3, 4, 7, 11];
+      return {
+        seed: digits(lens[Math.floor(Math.random() * lens.length)]),
+        font: Math.random() < 0.5
+          ? paddFonts[Math.floor(Math.random() * paddFonts.length)]
+          : undefined
+      };
+    }
+    // lower-decks cells are short with extra hidden digits (.hide-data,
+    // dropped below 1100px); classic/nemesis cells are 1-7 plain digits
+    return isLowerDecks
+      ? { seed: digits(2 + Math.floor(Math.random() * 2)), extra: digits(8) }
+      : { seed: digits(1 + Math.floor(Math.random() * 7)) };
+  }
+
+  // lower-decks/padd interleave dark filler columns ('0'/'000' dark-on-dark
+  // at the top, dim digits below)
+  function darkColumn() {
+    return pattern.map((_, i) => {
+      const edge = isPadd ? i === 0 : i === 0 || i === pattern.length - 1;
+      return {
+        seed: edge ? (isPadd ? '000' : '0') : digits(2),
+        dark: true,
+        darkFont: edge,
+        font: !edge && isPadd
+          ? paddFonts[Math.floor(Math.random() * paddFonts.length)]
+          : undefined
+      };
+    });
+  }
+
+  // Column model: cell = { entity?, format?, seed, extra?, dark?, darkFont? }.
+  // Built once per values/filler change; live updates flow through display().
   const cols = $derived.by(() => {
     const cells = (values ?? []).map(v =>
       typeof v === 'string'
-        ? { entity: v, seed: randomCell() }
-        : { entity: v.entity, format: v.format, seed: randomCell() }
+        ? { entity: v, ...randomCell() }
+        : { entity: v.entity, format: v.format, ...randomCell() }
     );
 
     const valueCols = Math.ceil(cells.length / rows);
-    while (cells.length < valueCols * rows) cells.push({ seed: randomCell() });
-
-    const fillerCols = filler ?? Math.max(0, columns - valueCols);
-    for (let i = 0; i < fillerCols * rows; i++) cells.push({ seed: randomCell() });
+    while (cells.length < valueCols * rows) cells.push(randomCell());
 
     const result = [];
-    for (let c = 0; c < valueCols + fillerCols; c++) {
+    for (let c = 0; c < valueCols; c++) {
       result.push(cells.slice(c * rows, (c + 1) * rows));
+    }
+
+    const fillerCols = filler ?? Math.max(0, columns - valueCols);
+    for (let c = 0; c < fillerCols; c++) {
+      // lower-decks alternates dim "darkspace" columns into the filler
+      result.push(
+        isLowerDecks && c % 2 === 1
+          ? darkColumn()
+          : pattern.map(() => randomCell())
+      );
     }
     return result;
   });
@@ -87,7 +134,11 @@
   {#each cols as column}
     <div class="data-column">
       {#each column as cell, i}
-        <div class="dc-row-{pattern[i]}">{display(cell)}</div>
+        <div
+          class="dc-row-{pattern[i]} {cell.font ?? ''}"
+          class:darkspace={cell.dark}
+          class:darkfont={cell.darkFont}
+        >{display(cell)}{#if cell.extra}<span class="hide-data">{cell.extra}</span>{/if}</div>
       {/each}
     </div>
   {/each}
