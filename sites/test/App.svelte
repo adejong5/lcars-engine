@@ -14,8 +14,9 @@
   import { ha } from '$shared/ha.svelte.js';
   import { playBeep } from '$shared/sounds.js';
 
-  // The LCARSPage section's live layout-switch demo
-  let layout = $state('standard');
+  // The LCARSPage section's live layout-switch demo:
+  // 'standard' | 'ultra' (both columns) | 'col1' | 'col2'
+  let layoutMode = $state('standard');
   let innerWidth = $state(0);
 
   // Live entities for the DataCascade demo in the top frame. Mock mode
@@ -48,7 +49,12 @@
 
 <svelte:window bind:innerWidth />
 
-<LCARSPage {layout} banner="LCARS • COMPONENT DOCUMENTATION" topPanel={{ href: '../../' }}>
+<LCARSPage
+  layout={layoutMode === 'ultra' ? 'ultra' : 'standard'}
+  column1={layoutMode === 'col1'}
+  column2={layoutMode === 'col2'}
+  banner="LCARS • COMPONENT DOCUMENTATION"
+  topPanel={{ href: '../../' }}>
 
   {#snippet topFrame()}
     <DataCascade values={cascadeValues} />
@@ -100,7 +106,8 @@
   </p>
   <ul class="lcars-list">
     <li><span class="code">theme</span> — 'classic' | 'nemesis' | 'lower-decks' | 'padd'; must match the imported theme CSS (padd = lower-decks-padd.css). See the <a href="../padd/">PADD site</a> for the padd theme live.</li>
-    <li><span class="code">layout</span> — 'standard' (this page) | 'ultra'; ultra adds the two decorative left columns from the original ultra templates (classic and nemesis themes only). Override their content with the <span class="code">column1</span> / <span class="code">column2</span> snippets.</li>
+    <li><span class="code">layout</span> — 'standard' (this page) | 'ultra'; ultra adds the two decorative left columns from the original ultra templates (classic and nemesis themes only).</li>
+    <li><span class="code">column1</span> / <span class="code">column2</span> — pick the ultra columns individually: <span class="code">true</span> renders the default decorative content, a snippet renders your own. Setting either enables the ultra frame on its own; <span class="code">layout="ultra"</span> is shorthand for both.</li>
     <li><span class="code">banner</span> — top banner text.</li>
     <li><span class="code">topPanel</span> — {'{ label?, href? }'} for the big top-left button; omit href for a decorative beep.</li>
     <li><span class="code">panel2</span> — {'{ label, hop }'} for the small panel under it.</li>
@@ -120,14 +127,22 @@
     so widen the window to see them.
   </p>
   <ButtonRow>
-    <LCARSButton
-      label={layout === 'ultra' ? 'Back to standard layout' : 'View in ultra layout'}
-      color="butterscotch"
-      onclick={() => (layout = layout === 'ultra' ? 'standard' : 'ultra')} />
+    <LCARSButton label="Standard"
+      color={layoutMode === 'standard' ? 'butterscotch' : undefined}
+      onclick={() => (layoutMode = 'standard')} />
+    <LCARSButton label="Ultra (both)"
+      color={layoutMode === 'ultra' ? 'butterscotch' : undefined}
+      onclick={() => (layoutMode = 'ultra')} />
+    <LCARSButton label="Column 1 only"
+      color={layoutMode === 'col1' ? 'butterscotch' : undefined}
+      onclick={() => (layoutMode = 'col1')} />
+    <LCARSButton label="Column 2 only"
+      color={layoutMode === 'col2' ? 'butterscotch' : undefined}
+      onclick={() => (layoutMode = 'col2')} />
   </ButtonRow>
-  {#if layout === 'ultra' && innerWidth < 1680}
+  {#if layoutMode !== 'standard' && innerWidth < 1680}
     <p class="font-red blink">
-      Ultra layout is active, but your window is {innerWidth}px wide — the theme CSS
+      An ultra layout is active, but your window is {innerWidth}px wide — the theme CSS
       hides the ultra columns below 1680px.
     </p>
   {/if}

@@ -22,6 +22,11 @@
    *                 original ultra templates, adding decorative column-1
    *                 and column-2 to the left (classic and nemesis only —
    *                 the lower-decks CSS has no ultra classes).
+   *   column1,    — pick ultra columns individually: true renders the
+   *   column2       default decorative content, a snippet renders your
+   *                 own. Setting either (or both) enables the ultra
+   *                 frame without needing layout="ultra"; layout="ultra"
+   *                 is shorthand for both columns with defaults.
    *   banner      — top banner text
    *   topPanel    — { label?, href? } for the big top-left panel button;
    *                 label defaults to 'LCARS', omit href for a decorative
@@ -35,11 +40,11 @@
    *              and/or <NavButtons>
    *   sidebar  — content for the left sidebar, typically <SidePanels>;
    *              defaults to <SidePanels /> (7 auto-filler panels + bottom)
-   *   column1  — ultra only: far-left column content; defaults to the
-   *              template's <LCARSFrame> + <Pillbox> + status list +
-   *              <Pillbox variant={2}>
-   *   column2  — ultra only: narrow second column content; defaults to
-   *              the template's panels 11–15 with three sidebar buttons
+   *   column1  — far-left ultra column; defaults to the template's
+   *              <LCARSFrame> + <Pillbox> + status list + <Pillbox
+   *              variant={2}>
+   *   column2  — narrow second ultra column; defaults to the template's
+   *              panels 11–15 with three sidebar buttons
    *   children — main content
    *   footer   — replaces the default footer text (attribution kept)
    */
@@ -49,7 +54,7 @@
   import Pillbox from './Pillbox.svelte';
   import { playBeep, playBeepAndGo } from '../sounds.js';
 
-  /** @type {{ theme?: 'classic'|'nemesis'|'lower-decks'|'padd', layout?: 'standard'|'ultra', banner?: string, topPanel?: {label: string, href?: string}, panel2?: {label: string, hop?: string}, sounds?: boolean, floorText?: string, topFrame?: import('svelte').Snippet, sidebar?: import('svelte').Snippet, column1?: import('svelte').Snippet, column2?: import('svelte').Snippet, children?: import('svelte').Snippet, footer?: import('svelte').Snippet }} */
+  /** @type {{ theme?: 'classic'|'nemesis'|'lower-decks'|'padd', layout?: 'standard'|'ultra', banner?: string, topPanel?: {label: string, href?: string}, panel2?: {label: string, hop?: string}, sounds?: boolean, floorText?: string, topFrame?: import('svelte').Snippet, sidebar?: import('svelte').Snippet, column1?: boolean | import('svelte').Snippet, column2?: boolean | import('svelte').Snippet, children?: import('svelte').Snippet, footer?: import('svelte').Snippet }} */
   let {
     theme = 'classic',
     layout = 'standard',
@@ -66,8 +71,11 @@
     footer
   } = $props();
 
-  // reactive so a site can switch layouts at runtime
-  const ultra = $derived(layout === 'ultra');
+  // reactive so a site can switch layouts at runtime; either column prop
+  // (true = defaults, snippet = custom) enables the ultra frame on its own
+  const ultra = $derived(layout === 'ultra' || !!column1 || !!column2);
+  const showCol1 = $derived(layout === 'ultra' || !!column1);
+  const showCol2 = $derived(layout === 'ultra' || !!column2);
   // default ultra column-2 buttons; labels/colors from the original templates
   const sideButtons = theme === 'nemesis'
     ? [['JS2B-01', 'button-evening'], ['JS2B-02', 'button-moonbeam'], ['MS2B-03', 'button-evening']]
@@ -168,8 +176,9 @@
 
 {#if ultra}
   <div class="wrap-everything">
+    {#if showCol1}
     <section id="column-1">
-      {#if column1}
+      {#if typeof column1 === 'function'}
         {@render column1()}
       {:else}
         <LCARSFrame horizontal={theme === 'nemesis'} />
@@ -190,8 +199,10 @@
         ]} />
       {/if}
     </section>
+    {/if}
+    {#if showCol2}
     <section id="column-2">
-      {#if column2}
+      {#if typeof column2 === 'function'}
         {@render column2()}
       {:else}
         <div class="panel-11">11-1524</div>
@@ -204,6 +215,7 @@
         <div class="panel-15">15-3504</div>
       {/if}
     </section>
+    {/if}
     <section id="column-3">
       {@render pageFrame()}
     </section>
