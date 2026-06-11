@@ -5,6 +5,10 @@ import path from 'path';
 export default defineConfig({
   plugins: [svelte()],
 
+  // Relative asset URLs so the build works at any mount path
+  // (e.g. GitHub Pages serves it under /<repo-name>/).
+  base: './',
+
   resolve: {
     alias: {
       // Import shared assets as $shared/... instead of ../../shared/...

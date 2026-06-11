@@ -48,12 +48,12 @@
 
 <svelte:window bind:innerWidth />
 
-<LCARSPage {layout} banner="LCARS • COMPONENT DOCUMENTATION" topPanel={{ href: '/' }}>
+<LCARSPage {layout} banner="LCARS • COMPONENT DOCUMENTATION" topPanel={{ href: '../../' }}>
 
   {#snippet topFrame()}
     <DataCascade values={cascadeValues} />
     <NavButtons buttons={[
-      { label: 'HOME', href: '/' },
+      { label: 'HOME', href: '../../' },
       { label: 'PAGE', href: '#page' },
       { label: 'BTNS', href: '#buttons' },
       { label: 'HA', href: '#home-assistant' }
@@ -62,11 +62,11 @@
 
   {#snippet sidebar()}
     <SidePanels panels={[
-      { label: 'HOME', href: '/' },
+      { label: 'HOME', href: '../../' },
       { label: 'PAGE', href: '#page', hop: '-LAYOUT' },
       { label: 'CONTENT', href: '#bars', hop: '-WIDGETS' },
       { label: 'DATA', href: '#home-assistant', hop: '-LIVE' },
-      { label: 'PADD', href: '/sites/padd/', hop: '-THEME' }
+      { label: 'PADD', href: '../padd/', hop: '-THEME' }
     ]} />
   {/snippet}
 
@@ -99,7 +99,7 @@
     the matching CSS import in your site's <span class="code">main.js</span>.
   </p>
   <ul class="lcars-list">
-    <li><span class="code">theme</span> — 'classic' | 'nemesis' | 'lower-decks' | 'padd'; must match the imported theme CSS (padd = lower-decks-padd.css). See the <a href="/sites/padd/">PADD site</a> for the padd theme live.</li>
+    <li><span class="code">theme</span> — 'classic' | 'nemesis' | 'lower-decks' | 'padd'; must match the imported theme CSS (padd = lower-decks-padd.css). See the <a href="../padd/">PADD site</a> for the padd theme live.</li>
     <li><span class="code">layout</span> — 'standard' (this page) | 'ultra'; ultra adds the two decorative left columns from the original ultra templates (classic and nemesis themes only). Override their content with the <span class="code">column1</span> / <span class="code">column2</span> snippets.</li>
     <li><span class="code">banner</span> — top banner text.</li>
     <li><span class="code">topPanel</span> — {'{ label?, href? }'} for the big top-left button; omit href for a decorative beep.</li>
