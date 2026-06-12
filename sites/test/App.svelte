@@ -10,6 +10,7 @@
   import ImageFrame from '$shared/components/ImageFrame.svelte';
   import LCARSFrame from '$shared/components/LCARSFrame.svelte';
   import BarChart from '$shared/components/BarChart.svelte';
+  import LevelMeter from '$shared/components/LevelMeter.svelte';
   import Pillbox from '$shared/components/Pillbox.svelte';
   import Gallery from '$shared/components/Gallery.svelte';
   import { ha } from '$shared/ha.svelte.js';
@@ -284,6 +285,36 @@
         { label: 'NET',    value: 0.2, max: 1,   unit: ' Gb/s', color: 'var(--gold)', decimals: 2 },
       ]} />
     </LCARSFrame>
+  </div>
+
+  <LCARSBar title="LevelMeter" />
+  <p>
+    Segmented vertical level meter — pill-shaped segments that fill from the bottom up.
+    Each segment shows a slice of the gradient at its <em>position</em>, so the colour
+    reflects the level rather than just the fill amount. Backed by inline SVG so it
+    scales to any CSS size. Props: <span class="code">value</span>,
+    <span class="code">min</span> / <span class="code">max</span>,
+    <span class="code">segments</span> (default 16),
+    <span class="code">gap</span> (SVG units between segments, default 3), and
+    <span class="code">stops</span> — array of CSS colours bottom→top
+    (CSS custom properties work).
+  </p>
+  <div class="flexbox" style="align-items: flex-end; height: 200px; gap: 1.5rem;">
+    <div style="width: 40px; height: 100%;">
+      <LevelMeter value={25} />
+    </div>
+    <div style="width: 40px; height: 100%;">
+      <LevelMeter value={60} />
+    </div>
+    <div style="width: 40px; height: 100%;">
+      <LevelMeter value={90} segments={12} />
+    </div>
+    <div style="width: 40px; height: 100%;">
+      <LevelMeter value={75} stops={['var(--mars)', 'var(--gold)', 'var(--ice)']} />
+    </div>
+    <div style="width: 40px; height: 100%;">
+      <LevelMeter value={40} segments={8} gap={5} stops={['var(--african-violet)', 'var(--almond-creme)']} />
+    </div>
   </div>
 
   <LCARSBar title="LCARSFrame" />
