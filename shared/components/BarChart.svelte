@@ -38,12 +38,15 @@
 </div>
 
 <style>
+  /* font-size here is the em anchor — padding, gaps, and track height
+     are all in em so they scale if the anchor changes */
   .bar-chart {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 0.4rem;
-    padding: 0.5rem 0.6rem;
+    font-size: 0.6rem;
+    gap: 0.5em;
+    padding: 0.9em 1em;
     width: 100%;
     height: 100%;
     box-sizing: border-box;
@@ -52,11 +55,11 @@
   .bar-row {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.65em;
   }
 
   .bar-label {
-    font-size: 0.62rem;
+    font-size: 0.56rem; /* 10% smaller than original 0.62rem */
     line-height: 1;
     font-weight: bold;
     text-transform: uppercase;
@@ -70,20 +73,20 @@
 
   .bar-track {
     flex: 1;
-    height: 11px;
+    height: 1.2em; /* 0.6rem × 1.2 ≈ 11.5px; text is ~9px so ~1.25px above & below */
     background: rgba(255 255 255 / 0.1);
-    border-radius: 6px;
+    border-radius: 0.5em;
     overflow: hidden;
   }
 
   .bar-fill {
     height: 100%;
-    border-radius: 6px;
+    border-radius: 0.5em;
     transition: width 0.7s ease;
   }
 
   .bar-value {
-    font-size: 0.68rem;
+    font-size: 0.61rem; /* 10% smaller than original 0.68rem */
     line-height: 1;
     font-weight: bold;
     color: var(--space-white, #f5f6fa);
