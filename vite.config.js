@@ -5,7 +5,7 @@ import fs from 'fs';
 
 // Every <dir>/<name>/index.html is a site — no manual registration needed.
 // `sites/` holds the public demos; `private/` is the gitignored clone of the
-// lcars-engine-deployments repo and may be absent (e.g. on CI).
+// private repo and may be absent (e.g. on CI).
 function siteEntries(dir) {
   if (!fs.existsSync(dir)) return {};
   return Object.fromEntries(

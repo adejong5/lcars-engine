@@ -9,6 +9,7 @@
   import ButtonRow from '$shared/components/ButtonRow.svelte';
   import ImageFrame from '$shared/components/ImageFrame.svelte';
   import LCARSFrame from '$shared/components/LCARSFrame.svelte';
+  import BarChart from '$shared/components/BarChart.svelte';
   import Pillbox from '$shared/components/Pillbox.svelte';
   import Gallery from '$shared/components/Gallery.svelte';
   import { ha } from '$shared/ha.svelte.js';
@@ -262,6 +263,28 @@
   <Accordion title="open — starts expanded" open limitWidth>
     <p>Any markup works in here, including other components.</p>
   </Accordion>
+
+  <LCARSBar title="BarChart" />
+  <p>
+    Horizontal bar chart for displaying sensor values reactively. Compute
+    <span class="code">items</span> with <span class="code">$derived()</span> in the parent
+    so it updates when HA entities change. Place it inside an
+    <span class="code">LCARSFrame</span> for a framed display.
+    Each item: <span class="code">label</span>, <span class="code">value</span>,
+    <span class="code">max</span>, optional <span class="code">unit</span>,
+    <span class="code">color</span>, <span class="code">decimals</span>.
+  </p>
+  <div class="flexbox">
+    <LCARSFrame>
+      <BarChart items={[
+        { label: 'CPU',    value: 42,  max: 100, unit: '%', color: 'var(--butterscotch)', decimals: 0 },
+        { label: 'MEMORY', value: 68,  max: 100, unit: '%', color: 'var(--african-violet)', decimals: 0 },
+        { label: 'GPU',    value: 12,  max: 100, unit: '%', color: 'var(--ice)', decimals: 0 },
+        { label: 'DISK',   value: 41,  max: 100, unit: '%', color: 'var(--mars)', decimals: 0 },
+        { label: 'NET',    value: 0.2, max: 1,   unit: ' Gb/s', color: 'var(--gold)', decimals: 2 },
+      ]} />
+    </LCARSFrame>
+  </div>
 
   <LCARSBar title="LCARSFrame" />
   <p>
