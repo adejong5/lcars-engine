@@ -57,6 +57,7 @@
 
   .bar-label {
     font-size: 0.62rem;
+    line-height: 1;
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -83,6 +84,7 @@
 
   .bar-value {
     font-size: 0.68rem;
+    line-height: 1;
     font-weight: bold;
     color: var(--space-white, #f5f6fa);
     min-width: 5rem;
