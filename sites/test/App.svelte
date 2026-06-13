@@ -11,6 +11,9 @@
   import LCARSFrame from '$shared/components/LCARSFrame.svelte';
   import BarChart from '$shared/components/BarChart.svelte';
   import LevelMeter from '$shared/components/LevelMeter.svelte';
+  import TopBezel from '$shared/components/TopBezel.svelte';
+  import MiddleBezel from '$shared/components/MiddleBezel.svelte';
+  import BottomBezel from '$shared/components/BottomBezel.svelte';
   import Pillbox from '$shared/components/Pillbox.svelte';
   import Gallery from '$shared/components/Gallery.svelte';
   import { ha } from '$shared/ha.svelte.js';
@@ -314,6 +317,68 @@
     </div>
     <div style="width: 40px; height: 100%;">
       <LevelMeter value={40} segments={8} gap={5} stops={['var(--african-violet)', 'var(--almond-creme)']} />
+    </div>
+  </div>
+
+  <LCARSBar title="Bezels — LCARS Elbow Frames" />
+  <p>
+    <span class="code">TopBezel</span>, <span class="code">MiddleBezel</span> and
+    <span class="code">BottomBezel</span> are the LCARS "elbow" frame pieces. The
+    coloured frame is a real element (not a CSS border): an inner content div is
+    inset by padding so the colour shows through as a top/bottom bar and one or
+    both side bars. Top/bottom corners on whichever sides carry a bar are rounded —
+    <span class="code">outerRadius</span> on the coloured exterior,
+    <span class="code">innerRadius</span> on the interior — forming the elbow.
+    Stack the three to wrap any content. Props:
+    <span class="code">sides</span> (<span class="code">'left'</span> /
+    <span class="code">'right'</span> / <span class="code">'both'</span>),
+    <span class="code">color</span>, <span class="code">contentColor</span>,
+    <span class="code">bar</span> / <span class="code">side</span> thickness,
+    <span class="code">outerRadius</span>, <span class="code">innerRadius</span>.
+  </p>
+  <p>
+    All three examples below use the <em>defaults</em> — 15px top/bottom bar, 60px
+    side rails, 30px <span class="code">innerRadius</span>, and an
+    <span class="code">outerRadius</span> of <span class="code">innerRadius + bar</span>
+    (so the coloured band keeps a uniform thickness through the bend — the real
+    LCARS-elbow relationship, additive rather than a fixed ratio, so it holds at any
+    scale). Content is kept tall so the corner radii render fully rather than clamping
+    to half the box height.
+  </p>
+  <div class="flexbox" style="gap: 2rem; align-items: flex-start;">
+    <div style="flex: 1; min-width: 260px;">
+      <p class="code" style="margin-bottom: 0.5rem;">sides="left" — stacked frame</p>
+      <TopBezel sides="left">
+        <div style="padding: 1rem 1rem 1rem 0.5rem; min-height: 90px; color: var(--gold);">Top bar + left rail</div>
+      </TopBezel>
+      <MiddleBezel sides="left">
+        <div style="padding: 1rem 1rem 1rem 0.5rem; min-height: 90px; color: var(--space-white);">
+          Middle — straight left rail, flush above and below
+        </div>
+      </MiddleBezel>
+      <BottomBezel sides="left">
+        <div style="padding: 1rem 1rem 1rem 0.5rem; min-height: 90px; color: var(--gold);">Bottom bar + left rail</div>
+      </BottomBezel>
+    </div>
+    <div style="flex: 1; min-width: 260px;">
+      <p class="code" style="margin-bottom: 0.5rem;">sides="both" — defaults, theme-derived radii</p>
+      <TopBezel sides="both" color="var(--african-violet)">
+        <div style="padding: 1rem; min-height: 90px; color: var(--african-violet);">Both rails</div>
+      </TopBezel>
+      <BottomBezel sides="both" color="var(--african-violet)">
+        <div style="padding: 1rem; min-height: 90px; color: var(--space-white);">
+          Content boxed on both sides
+        </div>
+      </BottomBezel>
+    </div>
+    <div style="flex: 1; min-width: 260px;">
+      <p class="code" style="margin-bottom: 0.5rem;">sides="right" — innerRadius=50px → outer 65px</p>
+      <TopBezel sides="right" color="var(--butterscotch)" innerRadius="50px">
+        <div style="padding: 1rem; min-height: 200px; color: var(--butterscotch);">
+          Outer radius is innerRadius + bar, so the coloured band stays a
+          uniform thickness around the curve regardless of the radius.
+        </div>
+      </TopBezel>
     </div>
   </div>
 
