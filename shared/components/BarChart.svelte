@@ -58,8 +58,8 @@
 
   .bar-row {
     display: grid;
-    /* label gets a fixed share; track fills the rest; value is right-aligned fixed */
-    grid-template-columns: 7.5em 1fr 5.5em;
+    /* label and value size to content; the track absorbs all remaining width */
+    grid-template-columns: auto 1fr auto;
     gap: 0.65em;
     align-items: center;
     min-width: 0;
