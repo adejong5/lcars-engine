@@ -39,7 +39,9 @@
 
 <style>
   /* font-size here is the em anchor — padding, gaps, and track height
-     are all in em so they scale if the anchor changes */
+     are all in em so they scale if the anchor changes.
+     flex:1 + align-self:stretch fills the frame-col-3 container (which
+     uses align-items:center, so height:100% would resolve to 0). */
   .bar-chart {
     display: flex;
     flex-direction: column;
@@ -47,15 +49,20 @@
     font-size: 0.6rem;
     gap: 0.5em;
     padding: 0.9em 1em;
-    width: 100%;
-    height: 100%;
+    flex: 1 1 auto;
+    align-self: stretch;
+    min-width: 0;
+    min-height: 8em;
     box-sizing: border-box;
   }
 
   .bar-row {
-    display: flex;
-    align-items: center;
+    display: grid;
+    /* label gets a fixed share; track fills the rest; value is right-aligned fixed */
+    grid-template-columns: 7.5em 1fr 5.5em;
     gap: 0.65em;
+    align-items: center;
+    min-width: 0;
   }
 
   .bar-label {
@@ -65,18 +72,19 @@
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--space-white, #f5f6fa);
-    min-width: 5.5rem;
     text-align: right;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     opacity: 0.85;
   }
 
   .bar-track {
-    flex: 1;
     height: 1.2em; /* 0.6rem × 1.2 ≈ 11.5px; text is ~9px so ~1.25px above & below */
     background: rgba(255 255 255 / 0.1);
     border-radius: 0.5em;
     overflow: hidden;
+    min-width: 0;
   }
 
   .bar-fill {
@@ -90,8 +98,9 @@
     line-height: 1;
     font-weight: bold;
     color: var(--space-white, #f5f6fa);
-    min-width: 5rem;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 </style>
