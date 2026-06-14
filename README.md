@@ -50,10 +50,13 @@ This repo is set up to be driven by an AI coding agent. It ships a `CLAUDE.md` (
 
    > Make me a new site called "engineering" using the nemesis theme. Banner "USS PANDA — ENGINEERING". Show my power sensors in the data cascade, an accordion per room with its temperature and humidity, and red-alert styling when a water-leak sensor trips.
 
-   You don't need to know the entity ids — the agent reads `ENGINE.md` for how to structure the page, then pulls the matching entities (`sensor.*` power, per-room climate, `binary_sensor.*` leak) from your HA.
+   You can be as specific or loose as you want. You don't need to know the entity ids — the agent reads `ENGINE.md` for how to structure the page, then pulls the matching entities (`sensor.*` power, per-room climate, `binary_sensor.*` leak) from your HA. You might ask the agent to make a few different versions so you can pick your favorite or iterate off them. 
 4. The agent scaffolds `sites/engineering/` (three small files — every `sites/*/index.html` is auto-discovered by the build) and composes the page from the shared components with your real entity ids wired into the reactive store.
 5. **Preview** with `npm run dev`. With `.env.local` set it shows live HA data; append `?mock` to the URL (or drop the credentials) to fall back to fabricated drifting telemetry for offline layout work.
-6. `npm run build` and serve `dist/` from anything — a closet server, HA's own `www` folder, or GitHub Pages (this repo deploys itself there on every push). **Keep builds with real tokens off public hosting:** the token is baked into the bundle, so a build made with `.env.local` is a secret-carrier — serve it only on your LAN.
+6. `npm run build` and serve `dist/` from anything — a closet server, HA's own `www` folder, or GitHub Pages (this repo deploys its demo page there on every push).
+
+> [!WARNING]
+> **Keep builds with real tokens off public hosting:** the token is baked into the bundle, so a build made with `.env.local` is a secret-carrier — serve it only on your LAN.
 
 ### By hand
 
