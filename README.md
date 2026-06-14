@@ -48,7 +48,7 @@ This repo is set up to be driven by an AI coding agent. It ships a `CLAUDE.md` (
    (adjust the port if your HA isn't on `:8123`). Now the agent can pick real entity ids and group them sensibly instead of guessing.
 3. **Describe the dashboard you want**, in plain language:
 
-   > Make me a new site called "engineering" using the nemesis theme. Banner "USS PANDA — ENGINEERING". Show my power sensors in the data cascade, an accordion per room with its temperature and humidity, and red-alert styling when a water-leak sensor trips.
+   > Make me a new site called "engineering" using the nemesis theme. Banner "USS PANDA — ENGINEERING". Show my power sensors in the data cascade, an accordion per room with its temperature and humidity, and red-alert styling when a water-leak sensor trips. The entire page should fit entirely on a standard 1080p monitor. 
 
    You can be as specific or loose as you want. You don't need to know the entity ids — the agent reads `ENGINE.md` for how to structure the page, then pulls the matching entities (`sensor.*` power, per-room climate, `binary_sensor.*` leak) from your HA. You might ask the agent to make a few different versions so you can pick your favorite or iterate off them. 
 4. The agent scaffolds `sites/engineering/` (three small files — every `sites/*/index.html` is auto-discovered by the build) and composes the page from the shared components with your real entity ids wired into the reactive store.
