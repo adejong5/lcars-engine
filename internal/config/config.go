@@ -16,6 +16,7 @@ type Config struct {
 	Addr    string // TCP listen address, e.g. ":8080"
 	HAHost  string // Home Assistant host[:port], e.g. "192.168.1.100:8123"
 	HAToken string // long-lived access token (or Supervisor token in an add-on)
+	HASSL   bool   // connect with wss:// instead of ws://
 	Mock    bool   // serve fabricated data instead of connecting to HA
 	Dev     bool   // development mode (verbose logging; live template reload later)
 }
@@ -28,6 +29,7 @@ func Load() Config {
 		Addr:    ":" + getenv("PORT", "8080"),
 		HAHost:  os.Getenv("HA_HOST"),
 		HAToken: os.Getenv("HA_TOKEN"),
+		HASSL:   getbool("HA_SSL", false),
 		Mock:    getbool("MOCK", true),
 		Dev:     getbool("DEV", false),
 	}

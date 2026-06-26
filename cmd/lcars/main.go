@@ -25,12 +25,22 @@ func main() {
 	}
 	log := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: level}))
 
-	// Data source: mock for offline dev (Phase 2). The live HA client lands in
-	// Phase 3 and swaps in here behind the same ha.Source interface.
-	mock := ha.NewMock()
-	var src ha.Source = mock
-	if !cfg.Mock {
-		log.Warn("live HA client not implemented yet (Phase 3); serving mock data")
+	// Data source: mock fabricated data, or a live HA WebSocket connection.
+	// Both satisfy ha.Source, so the HTTP layer is identical either way.
+	var src ha.Source
+	var startSource func(context.Context)
+	if cfg.Mock {
+		mock := ha.NewMock()
+		src = mock
+		startSource = func(ctx context.Context) { mock.Run(ctx, 2*time.Second) }
+	} else {
+		if cfg.HAHost == "" || cfg.HAToken == "" {
+			log.Error("MOCK=false requires HA_HOST and HA_TOKEN")
+			os.Exit(1)
+		}
+		live := ha.NewLive(cfg.HAHost, cfg.HAToken, cfg.HASSL, log)
+		src = live
+		startSource = func(ctx context.Context) { live.Run(ctx) }
 	}
 
 	srv := server.New(cfg, log, src)
@@ -47,8 +57,8 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	// Drift the mock data until shutdown (no-op once live data replaces it).
-	go mock.Run(ctx, 2*time.Second)
+	// Start the data source: the mock drift loop, or the live HA connection.
+	go startSource(ctx)
 
 	go func() {
 		log.Info("listening", "addr", cfg.Addr, "mock", cfg.Mock, "dev", cfg.Dev)
