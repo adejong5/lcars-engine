@@ -1,0 +1,10 @@
+# Local config & secrets (HA host/token) — never commit
+/.env
+
+# Build output
+/lcars
+/bin/
+
+# Go test artifacts
+*.test
+*.out
