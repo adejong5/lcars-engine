@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/adejong5/lcars-engine/internal/config"
+	"github.com/adejong5/lcars-engine/internal/ha"
 	"github.com/adejong5/lcars-engine/internal/server"
 )
 
@@ -24,7 +25,15 @@ func main() {
 	}
 	log := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: level}))
 
-	srv := server.New(cfg, log)
+	// Data source: mock for offline dev (Phase 2). The live HA client lands in
+	// Phase 3 and swaps in here behind the same ha.Source interface.
+	mock := ha.NewMock()
+	var src ha.Source = mock
+	if !cfg.Mock {
+		log.Warn("live HA client not implemented yet (Phase 3); serving mock data")
+	}
+
+	srv := server.New(cfg, log, src)
 	httpServer := &http.Server{
 		Addr:              cfg.Addr,
 		Handler:           srv.Handler(),
@@ -37,6 +46,9 @@ func main() {
 	// Serve until SIGINT/SIGTERM, then shut down gracefully.
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
+
+	// Drift the mock data until shutdown (no-op once live data replaces it).
+	go mock.Run(ctx, 2*time.Second)
 
 	go func() {
 		log.Info("listening", "addr", cfg.Addr, "mock", cfg.Mock, "dev", cfg.Dev)

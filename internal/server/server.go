@@ -11,18 +11,20 @@ import (
 	"time"
 
 	"github.com/adejong5/lcars-engine/internal/config"
+	"github.com/adejong5/lcars-engine/internal/ha"
 )
 
 // Server holds shared dependencies for the HTTP handlers.
 type Server struct {
 	cfg config.Config
 	log *slog.Logger
+	src ha.Source
 	mux *http.ServeMux
 }
 
 // New builds a Server with its routes registered.
-func New(cfg config.Config, log *slog.Logger) *Server {
-	s := &Server{cfg: cfg, log: log, mux: http.NewServeMux()}
+func New(cfg config.Config, log *slog.Logger, src ha.Source) *Server {
+	s := &Server{cfg: cfg, log: log, src: src, mux: http.NewServeMux()}
 	s.routes()
 	return s
 }
@@ -34,6 +36,29 @@ func (s *Server) Handler() http.Handler {
 
 func (s *Server) routes() {
 	s.mux.HandleFunc("GET /healthz", s.handleHealth)
+	s.mux.HandleFunc("GET /api/states", s.handleStates)
+	s.mux.HandleFunc("GET /api/state/{id}", s.handleState)
+}
+
+// handleStates returns every known entity state. Terminal-verifiable:
+//
+//	curl -s localhost:8080/api/states
+func (s *Server) handleStates(w http.ResponseWriter, r *http.Request) {
+	writeJSON(w, http.StatusOK, s.src.All())
+}
+
+// handleState returns one entity. In mock mode unknown ids are fabricated on
+// read (always 200); the live client (Phase 3) returns 404 for unknown ids.
+//
+//	curl -s localhost:8080/api/state/sensor.cpu
+func (s *Server) handleState(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	st, ok := s.src.State(id)
+	if !ok {
+		writeJSON(w, http.StatusNotFound, map[string]any{"error": "unknown entity", "entity_id": id})
+		return
+	}
+	writeJSON(w, http.StatusOK, st)
 }
 
 // handleHealth reports liveness and the current mode. Terminal-verifiable:
