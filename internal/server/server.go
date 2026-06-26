@@ -29,9 +29,10 @@ func New(cfg config.Config, log *slog.Logger, src ha.Source) *Server {
 	return s
 }
 
-// Handler returns the root handler with middleware applied.
+// Handler returns the root handler with middleware applied. ingress is
+// outermost so the X-Ingress-Path prefix is available to every handler.
 func (s *Server) Handler() http.Handler {
-	return s.logRequests(s.mux)
+	return s.ingress(s.logRequests(s.mux))
 }
 
 func (s *Server) routes() {
@@ -100,6 +101,7 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{
 		"status": "ok",
 		"mock":   s.cfg.Mock,
+		"addon":  s.cfg.Addon,
 		"time":   time.Now().UTC().Format(time.RFC3339),
 	})
 }

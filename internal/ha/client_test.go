@@ -63,6 +63,18 @@ func TestHandleIgnoresOtherResults(t *testing.T) {
 	}
 }
 
+func TestBuildWSURL(t *testing.T) {
+	if got := BuildWSURL("192.168.2.100", false); got != "ws://192.168.2.100:8123/api/websocket" {
+		t.Fatalf("standalone url: %q", got)
+	}
+	if got := BuildWSURL("ha.local:8123", true); got != "wss://ha.local:8123/api/websocket" {
+		t.Fatalf("ssl url: %q", got)
+	}
+	if SupervisorWSURL != "ws://supervisor/core/websocket" {
+		t.Fatalf("supervisor url: %q", SupervisorWSURL)
+	}
+}
+
 func TestNormalizeHost(t *testing.T) {
 	if got := normalizeHost("192.168.2.100"); got != "192.168.2.100:8123" {
 		t.Fatalf("default port not applied: %q", got)

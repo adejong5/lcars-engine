@@ -34,11 +34,15 @@ func main() {
 		src = mock
 		startSource = func(ctx context.Context) { mock.Run(ctx, 2*time.Second) }
 	} else {
-		if cfg.HAHost == "" || cfg.HAToken == "" {
-			log.Error("MOCK=false requires HA_HOST and HA_TOKEN")
+		if cfg.HAToken == "" || (!cfg.Addon && cfg.HAHost == "") {
+			log.Error("MOCK=false requires HA_TOKEN (and HA_HOST unless ADDON=true)")
 			os.Exit(1)
 		}
-		live := ha.NewLive(cfg.HAHost, cfg.HAToken, cfg.HASSL, log)
+		wsURL := ha.BuildWSURL(cfg.HAHost, cfg.HASSL)
+		if cfg.Addon {
+			wsURL = ha.SupervisorWSURL // reach HA through the Supervisor proxy
+		}
+		live := ha.NewLive(wsURL, cfg.HAToken, log)
 		src = live
 		startSource = func(ctx context.Context) { live.Run(ctx) }
 	}

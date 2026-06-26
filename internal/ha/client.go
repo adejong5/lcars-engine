@@ -19,9 +19,8 @@ import (
 // It authenticates, seeds from get_states, subscribes to state_changed, and
 // reconnects with backoff. Ported from the original ha-websocket.js.
 type LiveClient struct {
-	host      string
+	url       string
 	token     string
-	ssl       bool
 	log       *slog.Logger
 	store     *Store
 	connected atomic.Bool
@@ -31,12 +30,12 @@ type LiveClient struct {
 	nextID atomic.Int64    // command id counter (ids 1,2 reserved for setup)
 }
 
-// NewLive returns a live client. host may omit the port (defaults to :8123).
-func NewLive(host, token string, ssl bool, log *slog.Logger) *LiveClient {
+// NewLive returns a live client for the given WebSocket URL. Build the URL with
+// BuildWSURL (standalone) or use SupervisorWSURL (add-on).
+func NewLive(url, token string, log *slog.Logger) *LiveClient {
 	c := &LiveClient{
-		host:  normalizeHost(host),
+		url:   url,
 		token: token,
-		ssl:   ssl,
 		log:   log,
 		store: NewStore(),
 	}
@@ -104,7 +103,7 @@ func (c *LiveClient) Run(ctx context.Context) {
 }
 
 func (c *LiveClient) connectOnce(ctx context.Context) error {
-	conn, _, err := websocket.Dial(ctx, c.wsURL(), nil)
+	conn, _, err := websocket.Dial(ctx, c.url, nil)
 	if err != nil {
 		return err
 	}
@@ -133,7 +132,7 @@ func (c *LiveClient) connectOnce(ctx context.Context) error {
 
 	c.connected.Store(true)
 	defer c.connected.Store(false)
-	c.log.Info("connected to HA", "url", c.wsURL())
+	c.log.Info("connected to HA", "url", c.url)
 
 	// Seed current states and subscribe to changes.
 	if err := wsjson.Write(ctx, conn, cmdMsg{ID: 1, Type: "get_states"}); err != nil {
@@ -190,12 +189,18 @@ func (c *LiveClient) handle(m wsMsg) {
 	}
 }
 
-func (c *LiveClient) wsURL() string {
+// SupervisorWSURL is the HA WebSocket endpoint when running as an add-on: the
+// Supervisor proxies to Home Assistant Core, authenticated with SUPERVISOR_TOKEN.
+const SupervisorWSURL = "ws://supervisor/core/websocket"
+
+// BuildWSURL builds the standalone HA WebSocket URL. host may omit the port
+// (defaults to :8123).
+func BuildWSURL(host string, ssl bool) string {
 	proto := "ws"
-	if c.ssl {
+	if ssl {
 		proto = "wss"
 	}
-	return fmt.Sprintf("%s://%s/api/websocket", proto, c.host)
+	return fmt.Sprintf("%s://%s/api/websocket", proto, normalizeHost(host))
 }
 
 // normalizeHost appends the default HA port when none is given.

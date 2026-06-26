@@ -17,6 +17,7 @@ type Config struct {
 	HAHost  string // Home Assistant host[:port], e.g. "192.168.1.100:8123"
 	HAToken string // long-lived access token (or Supervisor token in an add-on)
 	HASSL   bool   // connect with wss:// instead of ws://
+	Addon   bool   // running as a HA add-on: reach HA via the Supervisor proxy
 	Mock    bool   // serve fabricated data instead of connecting to HA
 	Dev     bool   // development mode (verbose logging; live template reload later)
 }
@@ -25,11 +26,21 @@ type Config struct {
 func Load() Config {
 	loadDotEnv(".env")
 
+	// Add-on mode is explicit (ADDON) or inferred from the Supervisor token the
+	// HA Supervisor injects into add-on containers. In that mode the token comes
+	// from SUPERVISOR_TOKEN and HA is reached at ws://supervisor/core/websocket.
+	addon := getbool("ADDON", os.Getenv("SUPERVISOR_TOKEN") != "")
+	token := os.Getenv("HA_TOKEN")
+	if token == "" {
+		token = os.Getenv("SUPERVISOR_TOKEN")
+	}
+
 	return Config{
 		Addr:    ":" + getenv("PORT", "8080"),
 		HAHost:  os.Getenv("HA_HOST"),
-		HAToken: os.Getenv("HA_TOKEN"),
+		HAToken: token,
 		HASSL:   getbool("HA_SSL", false),
+		Addon:   addon,
 		Mock:    getbool("MOCK", true),
 		Dev:     getbool("DEV", false),
 	}
