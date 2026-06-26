@@ -39,6 +39,63 @@ func (m *MockSource) State(id string) (State, bool) {
 // All returns every fabricated state, sorted by entity_id.
 func (m *MockSource) All() []State { return m.store.All() }
 
+// CallService applies common on/off-style services to the targeted entities so
+// the mock UI reflects control actions offline. Unrecognized services are
+// accepted as no-ops.
+func (m *MockSource) CallService(domain, service string, data, target map[string]any) error {
+	for _, id := range targetEntities(target) {
+		st, _ := m.State(id) // ensure seeded
+		switch service {
+		case "turn_on":
+			st.State = "on"
+		case "turn_off":
+			st.State = "off"
+		case "toggle":
+			if st.State == "on" {
+				st.State = "off"
+			} else {
+				st.State = "on"
+			}
+		case "lock":
+			st.State = "locked"
+		case "unlock":
+			st.State = "unlocked"
+		case "open_cover":
+			st.State = "open"
+		case "close_cover":
+			st.State = "closed"
+		default:
+			continue
+		}
+		st.LastUpdated = time.Now().UTC()
+		m.store.Set(st)
+	}
+	return nil
+}
+
+// targetEntities extracts entity_id(s) from a service target, which HA allows
+// to be a single string or a list.
+func targetEntities(target map[string]any) []string {
+	if target == nil {
+		return nil
+	}
+	switch v := target["entity_id"].(type) {
+	case string:
+		return []string{v}
+	case []string:
+		return v
+	case []any:
+		out := make([]string, 0, len(v))
+		for _, e := range v {
+			if s, ok := e.(string); ok {
+				out = append(out, s)
+			}
+		}
+		return out
+	}
+	return nil
+}
+
 // Run drifts a random subset (~35%) of known entities on each interval until
 // the context is cancelled.
 func (m *MockSource) Run(ctx context.Context, interval time.Duration) {

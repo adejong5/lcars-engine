@@ -11,4 +11,9 @@ type Source interface {
 
 	// All returns every known state, sorted by entity_id.
 	All() []State
+
+	// CallService invokes a Home Assistant service (e.g. switch.turn_on). The
+	// live client sends it over the WebSocket; the mock applies it optimistically
+	// to its own store. data and target may be nil.
+	CallService(domain, service string, data, target map[string]any) error
 }

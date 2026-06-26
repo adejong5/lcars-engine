@@ -38,6 +38,38 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("GET /healthz", s.handleHealth)
 	s.mux.HandleFunc("GET /api/states", s.handleStates)
 	s.mux.HandleFunc("GET /api/state/{id}", s.handleState)
+	s.mux.HandleFunc("POST /api/call", s.handleCall)
+}
+
+// handleCall invokes a Home Assistant service. Terminal-verifiable:
+//
+//	curl -X POST localhost:8080/api/call \
+//	  -d '{"domain":"switch","service":"turn_on","target":{"entity_id":"switch.kitchen_spare"}}'
+func (s *Server) handleCall(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Domain      string         `json:"domain"`
+		Service     string         `json:"service"`
+		ServiceData map[string]any `json:"service_data"`
+		Target      map[string]any `json:"target"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"error": "invalid JSON body"})
+		return
+	}
+	if req.Domain == "" || req.Service == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"error": "domain and service are required"})
+		return
+	}
+	if err := s.src.CallService(req.Domain, req.Service, req.ServiceData, req.Target); err != nil {
+		writeJSON(w, http.StatusBadGateway, map[string]any{"error": err.Error()})
+		return
+	}
+	writeJSON(w, http.StatusAccepted, map[string]any{
+		"status":  "accepted",
+		"domain":  req.Domain,
+		"service": req.Service,
+		"target":  req.Target,
+	})
 }
 
 // handleStates returns every known entity state. Terminal-verifiable:
