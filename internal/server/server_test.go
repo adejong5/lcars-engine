@@ -23,8 +23,8 @@ func TestCallServiceTogglesMockState(t *testing.T) {
 	body := `{"domain":"switch","service":"turn_on","target":{"entity_id":"switch.test"}}`
 	rr := httptest.NewRecorder()
 	h.ServeHTTP(rr, httptest.NewRequest(http.MethodPost, "/api/call", strings.NewReader(body)))
-	if rr.Code != http.StatusAccepted {
-		t.Fatalf("POST /api/call status %d, want 202; body=%s", rr.Code, rr.Body.String())
+	if rr.Code != http.StatusOK {
+		t.Fatalf("POST /api/call status %d, want 200; body=%s", rr.Code, rr.Body.String())
 	}
 
 	rr = httptest.NewRecorder()

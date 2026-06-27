@@ -28,16 +28,26 @@ type LiveClient struct {
 	mu     sync.Mutex      // serializes writes and guards conn
 	conn   *websocket.Conn // active connection; nil when disconnected
 	nextID atomic.Int64    // command id counter (ids 1,2 reserved for setup)
+
+	pendingMu sync.Mutex             // guards pending
+	pending   map[int]chan callResult // command id → waiter for HA's result
+}
+
+// callResult carries HA's reply to a command back to the waiting caller.
+type callResult struct {
+	success bool
+	err     string
 }
 
 // NewLive returns a live client for the given WebSocket URL. Build the URL with
 // BuildWSURL (standalone) or use SupervisorWSURL (add-on).
 func NewLive(url, token string, log *slog.Logger) *LiveClient {
 	c := &LiveClient{
-		url:   url,
-		token: token,
-		log:   log,
-		store: NewStore(),
+		url:     url,
+		token:   token,
+		log:     log,
+		store:   NewStore(),
+		pending: make(map[int]chan callResult),
 	}
 	c.nextID.Store(2) // 1 = get_states, 2 = subscribe_events
 	return c
@@ -54,27 +64,53 @@ var ErrNotConnected = errors.New("ha: not connected to Home Assistant")
 
 var errAuthInvalid = errors.New("ha: auth_invalid (check HA_TOKEN)")
 
-// CallService sends a call_service command to Home Assistant. It is
-// fire-and-forget: a nil error means the command was sent, and the resulting
-// state arrives via the state_changed subscription. HA's own success/error
-// reply is logged by handle.
+// CallService invokes a Home Assistant service and waits for HA's result,
+// returning an error if HA reports failure, the connection is down, or the
+// reply times out. The resulting state still arrives via the state_changed
+// subscription; this just confirms the command was accepted.
 func (c *LiveClient) CallService(domain, service string, data, target map[string]any) error {
+	id := int(c.nextID.Add(1))
+	ch := make(chan callResult, 1)
+	c.pendingMu.Lock()
+	c.pending[id] = ch
+	c.pendingMu.Unlock()
+	defer func() {
+		c.pendingMu.Lock()
+		delete(c.pending, id)
+		c.pendingMu.Unlock()
+	}()
+
 	msg := callServiceMsg{
-		ID:          int(c.nextID.Add(1)),
+		ID:          id,
 		Type:        "call_service",
 		Domain:      domain,
 		Service:     service,
 		ServiceData: data,
 		Target:      target,
 	}
+
 	c.mu.Lock()
-	defer c.mu.Unlock()
 	if c.conn == nil {
+		c.mu.Unlock()
 		return ErrNotConnected
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	return wsjson.Write(ctx, c.conn, msg)
+	wctx, wcancel := context.WithTimeout(context.Background(), 5*time.Second)
+	err := wsjson.Write(wctx, c.conn, msg)
+	wcancel()
+	c.mu.Unlock()
+	if err != nil {
+		return err
+	}
+
+	select {
+	case res := <-ch:
+		if !res.success {
+			return fmt.Errorf("ha: %s.%s failed: %s", domain, service, res.err)
+		}
+		return nil
+	case <-time.After(10 * time.Second):
+		return fmt.Errorf("ha: timed out awaiting %s.%s result", domain, service)
+	}
 }
 
 // Run maintains the connection until ctx is cancelled, reconnecting with
@@ -150,6 +186,7 @@ func (c *LiveClient) connectOnce(ctx context.Context) error {
 		c.mu.Lock()
 		c.conn = nil
 		c.mu.Unlock()
+		c.failPending() // unblock any in-flight CallService waiters
 	}()
 
 	for {
@@ -178,7 +215,14 @@ func (c *LiveClient) handle(m wsMsg) {
 			c.log.Info("seeded states from HA", "count", len(states))
 			return
 		}
-		// Replies to call_service (and other commands): surface failures.
+		// Deliver to a waiting CallService, if any.
+		c.pendingMu.Lock()
+		ch, waiting := c.pending[m.ID]
+		c.pendingMu.Unlock()
+		if waiting {
+			ch <- callResult{success: m.Success != nil && *m.Success, err: errText(m.Error)}
+			return
+		}
 		if m.Success != nil && !*m.Success {
 			c.log.Warn("HA command failed", "id", m.ID, "error", errText(m.Error))
 		}
@@ -209,6 +253,20 @@ func normalizeHost(host string) string {
 		return host
 	}
 	return host + ":8123"
+}
+
+// failPending notifies any in-flight CallService waiters that the connection
+// dropped, so they return promptly instead of waiting out the timeout.
+func (c *LiveClient) failPending() {
+	c.pendingMu.Lock()
+	for id, ch := range c.pending {
+		select {
+		case ch <- callResult{err: "connection lost"}:
+		default:
+		}
+		delete(c.pending, id)
+	}
+	c.pendingMu.Unlock()
 }
 
 // backoff returns 3s, 6s, 12s, … capped at 60s.

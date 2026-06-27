@@ -63,6 +63,29 @@ func TestHandleIgnoresOtherResults(t *testing.T) {
 	}
 }
 
+func TestHandleDeliversCallResult(t *testing.T) {
+	c := testClient()
+	c.pending = map[int]chan callResult{}
+
+	// success
+	ch := make(chan callResult, 1)
+	c.pending[5] = ch
+	ok := true
+	c.handle(wsMsg{Type: "result", ID: 5, Success: &ok})
+	if res := <-ch; !res.success {
+		t.Fatalf("want success, got %+v", res)
+	}
+
+	// failure carries the error text
+	ch2 := make(chan callResult, 1)
+	c.pending[6] = ch2
+	no := false
+	c.handle(wsMsg{Type: "result", ID: 6, Success: &no, Error: &wsError{Code: "not_found", Message: "nope"}})
+	if res := <-ch2; res.success || res.err == "" {
+		t.Fatalf("want failure with error text, got %+v", res)
+	}
+}
+
 func TestBuildWSURL(t *testing.T) {
 	if got := BuildWSURL("192.168.2.100", false); got != "ws://192.168.2.100:8123/api/websocket" {
 		t.Fatalf("standalone url: %q", got)

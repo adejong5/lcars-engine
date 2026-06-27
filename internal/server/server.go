@@ -65,8 +65,8 @@ func (s *Server) handleCall(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusBadGateway, map[string]any{"error": err.Error()})
 		return
 	}
-	writeJSON(w, http.StatusAccepted, map[string]any{
-		"status":  "accepted",
+	writeJSON(w, http.StatusOK, map[string]any{
+		"status":  "ok",
 		"domain":  req.Domain,
 		"service": req.Service,
 		"target":  req.Target,
