@@ -41,8 +41,10 @@ func Load() Config {
 		HAToken: token,
 		HASSL:   getbool("HA_SSL", false),
 		Addon:   addon,
-		Mock:    getbool("MOCK", true),
-		Dev:     getbool("DEV", false),
+		// Standalone defaults to mock (offline-friendly dev); an add-on has live
+		// HA via the Supervisor, so it defaults to real data.
+		Mock: getbool("MOCK", !addon),
+		Dev:  getbool("DEV", false),
 	}
 }
 

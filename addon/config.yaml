@@ -1,0 +1,28 @@
+# Home Assistant add-on manifest. The Supervisor pulls a prebuilt multi-arch
+# image (published by .github/workflows/release.yml on a version tag), so this
+# folder needs no Dockerfile or source. Keep `version` in sync with the image
+# tag the release workflow pushes.
+name: LCARS Engine
+version: "0.1.0"
+slug: lcars_engine
+description: Star Trek LCARS dashboards for Home Assistant, built for old wall displays
+url: https://github.com/adejong5/lcars-engine
+arch:
+  - aarch64
+  - amd64
+  - armv7
+init: false # scratch image; the binary is the entrypoint, no init system
+boot: auto
+startup: application
+# Served through HA's authenticated ingress proxy (in-sidebar panel). The app
+# binds 0.0.0.0:8080 and reads X-Ingress-Path so its relative URLs work behind
+# the proxy prefix.
+ingress: true
+ingress_port: 8080
+panel_icon: mdi:television-guide
+panel_title: LCARS
+# Grants SUPERVISOR_TOKEN + access to Home Assistant Core. The app auto-detects
+# the token and connects via ws://supervisor/core/websocket — no user config.
+homeassistant_api: true
+image: ghcr.io/adejong5/{arch}-lcars-engine
+# /healthz is available as a watchdog target once a port is mapped.

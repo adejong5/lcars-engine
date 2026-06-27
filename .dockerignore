@@ -6,3 +6,8 @@
 decisions/
 /lcars
 /bin/
+
+# add-on packaging / CI (not needed in the image build context)
+addon/
+.github/
+repository.json
