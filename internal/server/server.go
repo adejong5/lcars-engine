@@ -12,19 +12,21 @@ import (
 
 	"github.com/adejong5/lcars-engine/internal/config"
 	"github.com/adejong5/lcars-engine/internal/ha"
+	"github.com/adejong5/lcars-engine/internal/render"
 )
 
 // Server holds shared dependencies for the HTTP handlers.
 type Server struct {
-	cfg config.Config
-	log *slog.Logger
-	src ha.Source
-	mux *http.ServeMux
+	cfg    config.Config
+	log    *slog.Logger
+	src    ha.Source
+	render *render.Renderer
+	mux    *http.ServeMux
 }
 
 // New builds a Server with its routes registered.
-func New(cfg config.Config, log *slog.Logger, src ha.Source) *Server {
-	s := &Server{cfg: cfg, log: log, src: src, mux: http.NewServeMux()}
+func New(cfg config.Config, log *slog.Logger, src ha.Source, rnd *render.Renderer) *Server {
+	s := &Server{cfg: cfg, log: log, src: src, render: rnd, mux: http.NewServeMux()}
 	s.routes()
 	return s
 }
@@ -36,6 +38,8 @@ func (s *Server) Handler() http.Handler {
 }
 
 func (s *Server) routes() {
+	s.mux.Handle("GET /static/", render.Static())
+	s.mux.HandleFunc("GET /{$}", s.handleOps) // exact root only
 	s.mux.HandleFunc("GET /healthz", s.handleHealth)
 	s.mux.HandleFunc("GET /api/states", s.handleStates)
 	s.mux.HandleFunc("GET /api/state/{id}", s.handleState)

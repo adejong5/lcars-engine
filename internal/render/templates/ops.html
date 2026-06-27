@@ -1,0 +1,14 @@
+{{define "content"}}
+  <div class="lcars-text-bar"><h3>Climate</h3></div>
+  <div class="pillbox">
+    {{range .Temps}}
+      <div class="pill">{{.Label}}<span class="hop">{{.Display}}</span></div>
+    {{end}}
+  </div>
+
+  <div class="lcars-text-bar"><h3>Controls</h3></div>
+  <div class="pillbox">
+    <div class="pill">{{.Switch.Label}}<span class="hop">{{.Switch.Value}}</span></div>
+    <div class="pill">{{.Climate.Label}}<span class="hop">{{.Climate.Value}}</span></div>
+  </div>
+{{end}}

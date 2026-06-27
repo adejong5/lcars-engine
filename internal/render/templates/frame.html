@@ -1,0 +1,52 @@
+{{define "frame"}}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Base path makes every relative URL below resolve correctly whether the
+       app is served at / (standalone) or under HA's ingress prefix. -->
+  <base href="{{.Base}}/">
+  <title>LCARS — {{.Title}}</title>
+  <link rel="stylesheet" href="static/classic.css">
+  <script src="static/htmx.min.js" defer></script>
+</head>
+<body>
+  <section id="column-3" class="wrap-standard">
+    <div class="wrap">
+      <div class="left-frame-top">
+        <button class="panel-1-button">LCARS</button>
+        <div class="panel-2">01<span class="hop">-HIGHBROOK</span></div>
+      </div>
+      <div class="right-frame-top">
+        <div class="banner">{{.Banner}}</div>
+        <div class="data-cascade-button-group"></div>
+        <div class="bar-panel first-bar-panel">
+          <div class="bar-1"></div><div class="bar-2"></div><div class="bar-3"></div><div class="bar-4"></div><div class="bar-5"></div>
+        </div>
+      </div>
+    </div>
+    <div class="wrap" id="gap">
+      <div class="left-frame">
+        <div><div class="panel-3">03<span class="hop">-OPS</span></div>
+          <div class="panel-4">04</div><div class="panel-5">05</div>
+          <div class="panel-6">06</div><div class="panel-7">07</div>
+          <div class="panel-8">08</div><div class="panel-9">09</div></div>
+        <div><div class="panel-10">10</div></div>
+      </div>
+      <div class="right-frame">
+        <div class="bar-panel">
+          <div class="bar-6"></div><div class="bar-7"></div><div class="bar-8"></div><div class="bar-9"></div><div class="bar-10"></div>
+        </div>
+        <main>
+          {{template "content" .}}
+        </main>
+        <footer>
+          LCARS Inspired Website Template by <a href="https://www.thelcars.com">www.TheLCARS.com</a>.
+        </footer>
+      </div>
+    </div>
+    <div class="headtrim"></div>
+    <div class="baseboard"></div>
+  </section>
+</body>
+</html>{{end}}

@@ -13,6 +13,7 @@ import (
 
 	"github.com/adejong5/lcars-engine/internal/config"
 	"github.com/adejong5/lcars-engine/internal/ha"
+	"github.com/adejong5/lcars-engine/internal/render"
 	"github.com/adejong5/lcars-engine/internal/server"
 )
 
@@ -47,7 +48,13 @@ func main() {
 		startSource = func(ctx context.Context) { live.Run(ctx) }
 	}
 
-	srv := server.New(cfg, log, src)
+	rnd, err := render.New(cfg.Dev)
+	if err != nil {
+		log.Error("parse templates", "err", err)
+		os.Exit(1)
+	}
+
+	srv := server.New(cfg, log, src, rnd)
 	httpServer := &http.Server{
 		Addr:              cfg.Addr,
 		Handler:           srv.Handler(),

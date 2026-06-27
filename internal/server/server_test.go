@@ -10,11 +10,16 @@ import (
 
 	"github.com/adejong5/lcars-engine/internal/config"
 	"github.com/adejong5/lcars-engine/internal/ha"
+	"github.com/adejong5/lcars-engine/internal/render"
 )
 
 func newTestServer() http.Handler {
 	log := slog.New(slog.NewTextHandler(io.Discard, nil))
-	return New(config.Config{Mock: true}, log, ha.NewMock()).Handler()
+	rnd, err := render.New(false)
+	if err != nil {
+		panic(err)
+	}
+	return New(config.Config{Mock: true}, log, ha.NewMock(), rnd).Handler()
 }
 
 func TestCallServiceTogglesMockState(t *testing.T) {
@@ -47,6 +52,32 @@ func TestCallServiceValidation(t *testing.T) {
 	h.ServeHTTP(rr, httptest.NewRequest(http.MethodPost, "/api/call", strings.NewReader(`not json`)))
 	if rr.Code != http.StatusBadRequest {
 		t.Fatalf("bad JSON: status %d, want 400", rr.Code)
+	}
+}
+
+func TestOpsPageRenders(t *testing.T) {
+	h := newTestServer()
+	rr := httptest.NewRecorder()
+	h.ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/", nil))
+	if rr.Code != http.StatusOK {
+		t.Fatalf("GET / status %d", rr.Code)
+	}
+	body := rr.Body.String()
+	for _, s := range []string{`<base href="/">`, `class="banner"`, "lcars-text-bar", "TheLCARS.com", `href="static/classic.css"`} {
+		if !strings.Contains(body, s) {
+			t.Fatalf("page missing %q", s)
+		}
+	}
+}
+
+func TestOpsPageIngressBase(t *testing.T) {
+	h := newTestServer()
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req.Header.Set("X-Ingress-Path", "/api/hassio_ingress/xyz/")
+	rr := httptest.NewRecorder()
+	h.ServeHTTP(rr, req)
+	if !strings.Contains(rr.Body.String(), `<base href="/api/hassio_ingress/xyz/">`) {
+		t.Fatal("ingress base href not applied")
 	}
 }
 
