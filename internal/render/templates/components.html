@@ -31,3 +31,44 @@
 {{define "toggle"}}<form hx-post="action/{{.ID}}" hx-swap="outerHTML" style="display:inline">
   <button type="submit" class="lcars-button {{if .On}}button-gold{{else}}button-gray{{end}}">{{.Label}} &middot; {{.State}}</button>
 </form>{{end}}
+
+{{/* level-meter: segmented vertical gauge (inline SVG, geometry precomputed).
+     Data: view.Meter. */}}
+{{define "level-meter"}}<svg class="level-meter" viewBox="0 0 {{.VW}} {{.VH}}" preserveAspectRatio="none" role="meter">
+  <defs><linearGradient id="{{.GID}}" x1="0" y1="{{.VH}}" x2="0" y2="0" gradientUnits="userSpaceOnUse">
+    {{range .Stops}}<stop offset="{{.Offset}}%" style="{{css (printf "stop-color:%s" .Color)}}"/>{{end}}
+  </linearGradient></defs>
+  {{$g := .GID}}{{$w := .RectW}}{{range .Segs}}<rect x="2" y="{{.Y}}" width="{{$w}}" height="{{.H}}" rx="{{.R}}" ry="{{.R}}" fill="{{if .Lit}}url(#{{$g}}){{else}}rgba(255,255,255,0.06){{end}}"/>{{end}}
+</svg>{{end}}
+
+{{/* data-cascade: the animated number grid. Data: [][]cascadeCell{Row, Text};
+     the theme's dc-row-N classes drive the colour cycling. */}}
+{{define "data-cascade"}}<div class="data-cascade-wrapper" id="default">
+  {{range .}}<div class="data-column">
+    {{range .}}<div class="dc-row-{{.Row}}">{{.Text}}</div>{{end}}
+  </div>{{end}}
+</div>{{end}}
+
+{{/* accordion: collapsible section via native <details> (no JS; degrades to
+     open on ancient browsers). Data: {Title, Body}. */}}
+{{define "accordion"}}<details class="lcars-accordion">
+  <summary class="accordion">{{.Title}}</summary>
+  <div class="acc-body">{{.Body}}</div>
+</details>{{end}}
+
+{{/* image-frame: titled, bordered image with the LCARS base blocks.
+     Data: {Title, Src, Alt}. */}}
+{{define "image-frame"}}<div class="image-frame">
+  <div class="imgf-title"><div class="h4-wrapper"><h4>{{.Title}}</h4></div></div>
+  <div class="imgf-image-body"><div class="image-holder"><img src="{{.Src}}" alt="{{.Alt}}"></div></div>
+  <div class="imgf-base"><div class="imgf-block-1"></div><div class="imgf-block-2"></div><div class="imgf-block-3"></div><div class="imgf-block-4"></div><div class="imgf-block-5"></div></div>
+</div>{{end}}
+
+{{/* gallery: image grid. Data: {Thumbs bool, Images []{Src, Alt, Caption}}. */}}
+{{define "gallery"}}<ul class="gallery{{if .Thumbs}} thumbs{{end}}">
+  {{range .Images}}<li><img src="{{.Src}}" alt="{{.Alt}}">{{if .Caption}}<div>{{.Caption}}</div>{{end}}</li>{{end}}
+</ul>{{end}}
+
+{{/* nav-buttons: the top-frame button row (lives in topFrame). Data: a list of
+     {Label, Href}. */}}
+{{define "nav-buttons"}}<nav>{{range .}}<a href="{{.Href}}"><button>{{.Label}}</button></a>{{end}}</nav>{{end}}

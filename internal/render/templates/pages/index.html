@@ -1,34 +1,75 @@
 {{define "content"}}
-  <p>Component library demo. Each section shows a live component and the template
-     call that produces it. The dashboard lives at <a href="ops">ops</a>.</p>
+  <p>Component library demo. Each section describes a component, shows it live,
+     and gives the template call that produces it. Components are defined in
+     <span class="code">components.html</span>; their view models live in
+     <span class="code">internal/view</span>. The dashboard is at
+     <a href="ops">ops</a>.</p>
 
   {{template "lcars-bar" "LCARSBar"}}
+  <p>A titled section divider — the equivalent of a heading. Use one to introduce
+     each group of readouts or controls on a page.</p>
   <div class="demo">
     <div class="demo-render">{{template "lcars-bar" "Section Title"}}</div>
     <pre class="demo-code">{{`{{template "lcars-bar" "Section Title"}}`}}</pre>
   </div>
 
   {{template "lcars-bar" "PillGauge"}}
+  <p>A single value against a range, shown as a stadium pill with a gradient fill
+     clipped to the value's position. Best for percentages, temperatures, and
+     speeds where one number matters. Build with
+     <span class="code">view.RenderGauge</span>; its <span class="code">Frac</span>
+     (0–1) drives the fill and the colour reflects the level.</p>
   <div class="demo">
-    <div class="demo-render">
-      {{range .Gauges}}{{template "pill-gauge" .}}{{end}}
-    </div>
+    <div class="demo-render">{{range .Gauges}}{{template "pill-gauge" .}}{{end}}</div>
     <pre class="demo-code">{{`{{range .Gauges}}{{template "pill-gauge" .}}{{end}}
 
-// view.Gauge{Label, Display, Frac (0..1), OK}
-// build with view.RenderGauge(spec, rawState, known)`}}</pre>
+view.Gauge{Label, Display, Frac, OK}
+view.RenderGauge(spec, rawState, known)`}}</pre>
   </div>
 
   {{template "lcars-bar" "BarChart"}}
+  <p>A handful of comparable values as horizontal bars, each with its own max,
+     unit, and colour. Good for a compact at-a-glance comparison (throughput,
+     resource usage). Pass a list of <span class="code">view.Bar</span>.</p>
   <div class="demo">
     <div class="demo-render">{{template "bar-chart" .Bars}}</div>
     <pre class="demo-code">{{`{{template "bar-chart" .Bars}}
 
-// .Bars is []view.Bar{Label, Display, Frac (0..1), Color}
-// build each with view.RenderBar(spec, rawState, known)`}}</pre>
+[]view.Bar{Label, Display, Frac, Color}
+view.RenderBar(spec, rawState, known)`}}</pre>
+  </div>
+
+  {{template "lcars-bar" "LevelMeter"}}
+  <p>A single value as a segmented vertical gauge (VU-meter style): pill segments
+     light from the bottom up, each showing its slice of a gradient so the colour
+     tracks the level. Inline SVG, scales to any box. Build with
+     <span class="code">view.RenderMeter(id, value, min, max, segments, gap, stops)</span>.</p>
+  <div class="demo">
+    <div class="demo-render" style="display:flex;gap:1.5rem;align-items:flex-end">
+      {{range .Meters}}<div class="level-meter-box">{{template "level-meter" .}}</div>{{end}}
+    </div>
+    <pre class="demo-code">{{`{{template "level-meter" $meter}}
+
+view.RenderMeter("m1", 72, 55, 85, 16, 3,
+  []string{"var(--ice)","var(--gold)","var(--mars)"})`}}</pre>
+  </div>
+
+  {{template "lcars-bar" "DataCascade"}}
+  <p>The animated number grid — the workhorse for showing lots of telemetry at
+     once. Cells carry <span class="code">dc-row-N</span> classes that the theme
+     colour-cycles. Pass columns of cells; mix live entity values with decorative
+     filler.</p>
+  <div class="demo">
+    <div class="demo-render">{{template "data-cascade" .Cascade}}</div>
+    <pre class="demo-code">{{`{{template "data-cascade" .Cascade}}
+
+// [][]cascadeCell{Row, Text} — columns of cells`}}</pre>
   </div>
 
   {{template "lcars-bar" "Pillbox"}}
+  <p>A grid of pills for compact status readouts or quick links. The theme colours
+     pills by position. Each pill is a label with a <span class="code">.hop</span>
+     suffix for its value.</p>
   <div class="demo">
     <div class="demo-render">
       <div class="pillbox">
@@ -40,30 +81,89 @@
     </div>
     <pre class="demo-code">{{`<div class="pillbox">
   <div class="pill">Label<span class="hop">value</span></div>
-  ...
 </div>`}}</pre>
   </div>
 
   {{template "lcars-bar" "Toggle control (hx-post)"}}
+  <p>An actionable button. It POSTs to its action endpoint; the server calls the
+     Home Assistant service, then returns the updated button which htmx swaps in.
+     Works as a plain form with no JS. This live one toggles
+     <span class="code">switch.kitchen_spare</span> for real.</p>
   <div class="demo">
     <div class="demo-render">{{template "toggle" .Toggle}}</div>
     <pre class="demo-code">{{`{{template "toggle" .Toggle}}
 
-// POSTs to action/{ID}; the server calls the HA service and
-// returns the updated button. serverToggle{ID, Label, State, On}.
-// This one toggles switch.kitchen_spare for real.`}}</pre>
+// serverToggle{ID, Label, State, On}; POST /action/{ID}`}}</pre>
+  </div>
+
+  {{template "lcars-bar" "Accordion"}}
+  <p>A collapsible section for tucking away secondary detail. Built on native
+     <span class="code">&lt;details&gt;</span> — no JavaScript, and it degrades to
+     simply open on very old browsers.</p>
+  <div class="demo">
+    <div class="demo-render">{{template "accordion" .Accordion}}</div>
+    <pre class="demo-code">{{`{{template "accordion" .Accordion}}
+
+// {Title, Body}`}}</pre>
   </div>
 
   {{template "lcars-bar" "Bezels (LCARS elbow frames)"}}
+  <p>The signature elbow frames. A coloured bar runs along the top or bottom and
+     bends into one or both side rails, wrapping content. Stack a top + bottom (or
+     add a middle) to box a group. Pick sides with
+     <span class="code">bezel--left|right|both</span>; set the colour with
+     <span class="code">--bezel-color</span>.</p>
   <div class="demo">
     <div class="demo-render">
-      <div class="bezel top-bezel bezel--left"><div class="bezel-content" style="min-height:60px;padding:0.5rem 1rem;color:var(--gold)">top-bezel, sides=left</div></div>
-      <div class="bezel bottom-bezel bezel--both"><div class="bezel-content" style="min-height:60px;padding:0.5rem 1rem;color:var(--gold)">bottom-bezel, sides=both</div></div>
+      <div class="bezel top-bezel bezel--left"><div class="bezel-content" style="min-height:56px;padding:0.5rem 1rem;color:var(--gold)">top-bezel, sides=left</div></div>
+      <div class="bezel bottom-bezel bezel--both" style="--bezel-color:var(--african-violet)"><div class="bezel-content" style="min-height:56px;padding:0.5rem 1rem;color:var(--african-violet)">bottom-bezel, sides=both</div></div>
     </div>
     <pre class="demo-code">{{`<div class="bezel top-bezel bezel--left">
   <div class="bezel-content">...</div>
 </div>
-<!-- top|bottom-bezel + bezel--left|right|both;
-     colour via style="--bezel-color: var(--mars)" -->`}}</pre>
+<!-- colour: style="--bezel-color: var(--mars)" -->`}}</pre>
+  </div>
+
+  {{template "lcars-bar" "ImageFrame"}}
+  <p>A titled, bordered image with the LCARS base blocks — for a camera snapshot
+     or any single image. Pass a title and image source.</p>
+  <div class="demo">
+    <div class="demo-render">{{template "image-frame" .Image}}</div>
+    <pre class="demo-code">{{`{{template "image-frame" .Image}}
+
+// {Title, Src, Alt}`}}</pre>
+  </div>
+
+  {{template "lcars-bar" "Gallery"}}
+  <p>A simple image grid (flagged experimental in the theme). Add
+     <span class="code">thumbs</span> for fixed-size thumbnails; each item can
+     have a caption.</p>
+  <div class="demo">
+    <div class="demo-render">{{template "gallery" .Gallery}}</div>
+    <pre class="demo-code">{{`{{template "gallery" .Gallery}}
+
+// {Thumbs, Images:[]{Src, Alt, Caption}}`}}</pre>
+  </div>
+
+  {{template "lcars-bar" "NavButtons"}}
+  <p>The top-frame button row, used in a page's header for high-level controls or
+     links to sibling pages. Lives in the frame's top area.</p>
+  <div class="demo">
+    <div class="demo-render">{{template "nav-buttons" .NavItems}}</div>
+    <pre class="demo-code">{{`{{template "nav-buttons" .NavItems}}
+
+// []{Label, Href} — placed in the page frame's top area`}}</pre>
+  </div>
+
+  {{template "lcars-bar" "SidePanels"}}
+  <p>The coloured panel stack down the left frame — the dashboard's page-to-page
+     navigation. It's structural (part of the page frame), so it's shown here as
+     markup rather than rendered in the content column.</p>
+  <div class="demo">
+    <div class="demo-render"><em>(rendered in the left frame of each page)</em></div>
+    <pre class="demo-code">{{`<div>
+  <a class="panel-3" href="ops">03<span class="hop">-OPS</span></a>
+  <div class="panel-4">04</div> ... <div class="panel-10">10</div>
+</div>`}}</pre>
   </div>
 {{end}}

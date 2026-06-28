@@ -1,6 +1,7 @@
 package server
 
 import (
+	"math/rand/v2"
 	"net/http"
 
 	"github.com/adejong5/lcars-engine/internal/view"
@@ -154,14 +155,48 @@ func onoff(on bool) string {
 
 // ── Component demo (index) ─────────────────────────────────────
 
+type cascadeCell struct {
+	Row  int
+	Text string
+}
+
+type navItem struct {
+	Label string
+	Href  string
+}
+
+type galleryImage struct {
+	Src, Alt, Caption string
+}
+
+type galleryData struct {
+	Thumbs bool
+	Images []galleryImage
+}
+
+type imageFrameData struct {
+	Title, Src, Alt string
+}
+
+type accordionData struct {
+	Title, Body string
+}
+
 type indexData struct {
 	frameData
-	Gauges []view.Gauge
-	Bars   []view.Bar
-	Toggle serverToggle
+	Gauges    []view.Gauge
+	Bars      []view.Bar
+	Toggle    serverToggle
+	Meters    []view.Meter
+	Cascade   [][]cascadeCell
+	NavItems  []navItem
+	Image     imageFrameData
+	Gallery   galleryData
+	Accordion accordionData
 }
 
 func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
+	stops := []string{"var(--ice)", "var(--gold)", "var(--mars)"}
 	data := indexData{
 		frameData: frameData{Title: "Components", Banner: "LCARS • COMPONENTS", Base: BasePath(r)},
 		Gauges: []view.Gauge{
@@ -175,9 +210,44 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 			{Label: "Ping", Display: "12 ms", Frac: 0.12, Color: "var(--gold)"},
 		},
 		Toggle: s.toggleView(controls[0]),
+		Meters: []view.Meter{
+			view.RenderMeter("m1", 25, 0, 100, 16, 3, stops),
+			view.RenderMeter("m2", 60, 0, 100, 16, 3, stops),
+			view.RenderMeter("m3", 90, 0, 100, 12, 4, stops),
+		},
+		Cascade:  demoCascade(),
+		NavItems: []navItem{{Label: "Subnet", Href: "subnet"}, {Label: "Thermal", Href: "thermal"}, {Label: "Engr", Href: "engr"}},
+		Image:    imageFrameData{Title: "Forward Sensor", Src: "static/placeholder.svg", Alt: "placeholder"},
+		Gallery: galleryData{Thumbs: true, Images: []galleryImage{
+			{Src: "static/placeholder.svg", Alt: "one", Caption: "Deck 1"},
+			{Src: "static/placeholder.svg", Alt: "two", Caption: "Deck 2"},
+		}},
+		Accordion: accordionData{Title: "Diagnostics", Body: "Collapsible detail — secondary readouts tucked away until needed."},
 	}
 	if err := s.render.Page(w, "index", data); err != nil {
 		s.log.Error("render index", "err", err)
 		http.Error(w, "render error", http.StatusInternalServerError)
 	}
+}
+
+// demoCascade builds a sample number grid for the component demo.
+func demoCascade() [][]cascadeCell {
+	pattern := []int{1, 1, 2, 3, 3, 4, 5, 6, 7}
+	cols := make([][]cascadeCell, 12)
+	for c := range cols {
+		col := make([]cascadeCell, len(pattern))
+		for i, p := range pattern {
+			col[i] = cascadeCell{Row: p, Text: digits(1 + rand.IntN(6))}
+		}
+		cols[c] = col
+	}
+	return cols
+}
+
+func digits(n int) string {
+	s := make([]byte, n)
+	for i := range s {
+		s[i] = byte('0' + rand.IntN(10))
+	}
+	return string(s)
 }

@@ -110,7 +110,18 @@
 .bottom-bezel.bezel--right > .bezel-content,
 .bottom-bezel.bezel--both  > .bezel-content { border-bottom-right-radius: 30px; }
 
+/* ── LevelMeter ────────────────────────────────────────────── */
+.level-meter { display: block; width: 100%; height: 100%; }
+
+/* ── Accordion (native <details>, no JS) ───────────────────── */
+.lcars-accordion { margin-block: 0.4rem; }
+.lcars-accordion summary { list-style: none; cursor: pointer; }
+.lcars-accordion summary::-webkit-details-marker { display: none; }
+.lcars-accordion .acc-body { padding: 0.75rem 1rem; background: rgba(255, 255, 255, 0.04); }
+
 /* ── Demo page (the component showcase at /) ───────────────── */
+.demo .level-meter-box { width: 40px; height: 180px; }
+.demo .data-cascade-wrapper { height: 170px; }
 .demo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem 1.5rem; align-items: center; margin-block: 0.75rem 1.75rem; }
 .demo-render { display: flex; flex-direction: column; gap: 0.5rem; min-width: 0; }
 .demo-code { margin: 0; padding: 0.75rem 1rem; background: #11131c; border-radius: 0.4rem; color: var(--space-white, #f5f6fa); font-size: 0.8rem; line-height: 1.4; overflow-x: auto; white-space: pre; }
