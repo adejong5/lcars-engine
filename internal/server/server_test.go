@@ -81,6 +81,25 @@ func TestOpsPageIngressBase(t *testing.T) {
 	}
 }
 
+func TestCellFragment(t *testing.T) {
+	h := newTestServer()
+
+	rr := httptest.NewRecorder()
+	h.ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/cells/switch.kitchen_spare", nil))
+	if rr.Code != http.StatusOK {
+		t.Fatalf("GET /cells/{id} status %d", rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Kitchen Spare") {
+		t.Fatalf("cell fragment missing label: %s", rr.Body.String())
+	}
+
+	rr = httptest.NewRecorder()
+	h.ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/cells/sensor.not_a_cell", nil))
+	if rr.Code != http.StatusNotFound {
+		t.Fatalf("unknown cell status %d, want 404", rr.Code)
+	}
+}
+
 func TestHealthz(t *testing.T) {
 	h := newTestServer()
 	rr := httptest.NewRecorder()

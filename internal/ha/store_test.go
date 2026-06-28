@@ -26,6 +26,47 @@ func TestStoreSetGetHas(t *testing.T) {
 	}
 }
 
+func TestStoreSubscribeNotifiesOnChange(t *testing.T) {
+	s := NewStore()
+	ch, cancel := s.Subscribe()
+	defer cancel()
+
+	s.Set(State{EntityID: "sensor.x", State: "1"})
+	select {
+	case id := <-ch:
+		if id != "sensor.x" {
+			t.Fatalf("notified %q, want sensor.x", id)
+		}
+	default:
+		t.Fatal("expected a notification on new entity")
+	}
+
+	// unchanged value → no notification
+	s.Set(State{EntityID: "sensor.x", State: "1"})
+	select {
+	case id := <-ch:
+		t.Fatalf("unexpected notification for unchanged value: %q", id)
+	default:
+	}
+
+	// changed value → notification
+	s.Set(State{EntityID: "sensor.x", State: "2"})
+	select {
+	case <-ch:
+	default:
+		t.Fatal("expected a notification on changed value")
+	}
+
+	// after cancel, no further notifications
+	cancel()
+	s.Set(State{EntityID: "sensor.x", State: "3"})
+	select {
+	case <-ch:
+		t.Fatal("notified after cancel")
+	default:
+	}
+}
+
 func TestStoreAllSorted(t *testing.T) {
 	s := NewStore()
 	s.Set(State{EntityID: "sensor.b"})

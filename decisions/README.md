@@ -18,7 +18,7 @@ provisional default we agreed to start with but expect to revisit) ·
 | [0004](0004-new-project-harvest-assets.md) | Build a new project; harvest assets (don't convert in place) | Accepted |
 | [0005](0005-server-stack-go.md) | Server stack: Go (net/http + html/template) | Accepted |
 | [0006](0006-server-side-ha-and-deployment.md) | Server-side HA connection; deploy as a container first | Accepted / Proposed |
-| [0007](0007-live-updates-polling-first.md) | Live updates: htmx polling first, SSE later | Proposed |
+| [0007](0007-live-updates-polling-first.md) | Live updates: SSE primary, infrequent polling fallback | Accepted |
 
 Related background lives in [`../COMPATIBILITY.md`](../COMPATIBILITY.md) (the
 browser-support audit) and [`../ENGINE.md`](../ENGINE.md) (dashboard design

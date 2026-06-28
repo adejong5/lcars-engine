@@ -56,6 +56,9 @@ func NewLive(url, token string, log *slog.Logger) *LiveClient {
 func (c *LiveClient) State(id string) (State, bool) { return c.store.Get(id) }
 func (c *LiveClient) All() []State                  { return c.store.All() }
 
+// Subscribe forwards to the underlying store.
+func (c *LiveClient) Subscribe() (<-chan string, func()) { return c.store.Subscribe() }
+
 // Connected reports whether the WebSocket is currently authenticated.
 func (c *LiveClient) Connected() bool { return c.connected.Load() }
 

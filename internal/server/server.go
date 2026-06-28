@@ -40,6 +40,8 @@ func (s *Server) Handler() http.Handler {
 func (s *Server) routes() {
 	s.mux.Handle("GET /static/", render.Static())
 	s.mux.HandleFunc("GET /{$}", s.handleOps) // exact root only
+	s.mux.HandleFunc("GET /sse", s.handleSSE)
+	s.mux.HandleFunc("GET /cells/{id}", s.handleCell)
 	s.mux.HandleFunc("GET /healthz", s.handleHealth)
 
 	// The JSON debug API is not used by the UI (htmx exchanges HTML); expose it

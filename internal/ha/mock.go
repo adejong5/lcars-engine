@@ -39,6 +39,9 @@ func (m *MockSource) State(id string) (State, bool) {
 // All returns every fabricated state, sorted by entity_id.
 func (m *MockSource) All() []State { return m.store.All() }
 
+// Subscribe forwards to the underlying store.
+func (m *MockSource) Subscribe() (<-chan string, func()) { return m.store.Subscribe() }
+
 // CallService applies common on/off-style services to the targeted entities so
 // the mock UI reflects control actions offline. Unrecognized services are
 // accepted as no-ops.

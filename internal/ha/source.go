@@ -16,4 +16,8 @@ type Source interface {
 	// live client sends it over the WebSocket; the mock applies it optimistically
 	// to its own store. data and target may be nil.
 	CallService(domain, service string, data, target map[string]any) error
+
+	// Subscribe returns a channel of changed entity_ids and a cancel func, used
+	// by the SSE endpoint to push updates.
+	Subscribe() (<-chan string, func())
 }
