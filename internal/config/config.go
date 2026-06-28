@@ -17,9 +17,10 @@ type Config struct {
 	HAHost  string // Home Assistant host[:port], e.g. "192.168.1.100:8123"
 	HAToken string // long-lived access token (or Supervisor token in an add-on)
 	HASSL   bool   // connect with wss:// instead of ws://
-	Addon   bool   // running as a HA add-on: reach HA via the Supervisor proxy
-	Mock    bool   // serve fabricated data instead of connecting to HA
-	Dev     bool   // development mode (verbose logging; live template reload later)
+	Addon    bool // running as a HA add-on: reach HA via the Supervisor proxy
+	Mock     bool // serve fabricated data instead of connecting to HA
+	Dev      bool // development mode (verbose logging; live template reload later)
+	DebugAPI bool // expose the JSON debug API (/api/*); off in production
 }
 
 // Load reads .env (best effort) then the environment and returns the Config.
@@ -35,6 +36,7 @@ func Load() Config {
 		token = os.Getenv("SUPERVISOR_TOKEN")
 	}
 
+	dev := getbool("DEV", false)
 	return Config{
 		Addr:    ":" + getenv("PORT", "8080"),
 		HAHost:  os.Getenv("HA_HOST"),
@@ -44,7 +46,10 @@ func Load() Config {
 		// Standalone defaults to mock (offline-friendly dev); an add-on has live
 		// HA via the Supervisor, so it defaults to real data.
 		Mock: getbool("MOCK", !addon),
-		Dev:  getbool("DEV", false),
+		Dev:  dev,
+		// The JSON debug API is a dev convenience, not used by the UI; default it
+		// to dev mode so it's off on an exposed/production instance.
+		DebugAPI: getbool("DEBUG_API", dev),
 	}
 }
 

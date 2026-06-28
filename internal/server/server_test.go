@@ -19,7 +19,7 @@ func newTestServer() http.Handler {
 	if err != nil {
 		panic(err)
 	}
-	return New(config.Config{Mock: true}, log, ha.NewMock(), rnd).Handler()
+	return New(config.Config{Mock: true, DebugAPI: true}, log, ha.NewMock(), rnd).Handler()
 }
 
 func TestCallServiceTogglesMockState(t *testing.T) {

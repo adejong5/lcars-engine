@@ -41,9 +41,15 @@ func (s *Server) routes() {
 	s.mux.Handle("GET /static/", render.Static())
 	s.mux.HandleFunc("GET /{$}", s.handleOps) // exact root only
 	s.mux.HandleFunc("GET /healthz", s.handleHealth)
-	s.mux.HandleFunc("GET /api/states", s.handleStates)
-	s.mux.HandleFunc("GET /api/state/{id}", s.handleState)
-	s.mux.HandleFunc("POST /api/call", s.handleCall)
+
+	// The JSON debug API is not used by the UI (htmx exchanges HTML); expose it
+	// only when DEBUG_API is set, so an exposed instance has no read-everything /
+	// call-anything surface.
+	if s.cfg.DebugAPI {
+		s.mux.HandleFunc("GET /api/states", s.handleStates)
+		s.mux.HandleFunc("GET /api/state/{id}", s.handleState)
+		s.mux.HandleFunc("POST /api/call", s.handleCall)
+	}
 }
 
 // handleCall invokes a Home Assistant service. Terminal-verifiable:
