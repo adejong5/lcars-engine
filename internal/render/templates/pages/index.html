@@ -1,0 +1,69 @@
+{{define "content"}}
+  <p>Component library demo. Each section shows a live component and the template
+     call that produces it. The dashboard lives at <a href="ops">ops</a>.</p>
+
+  {{template "lcars-bar" "LCARSBar"}}
+  <div class="demo">
+    <div class="demo-render">{{template "lcars-bar" "Section Title"}}</div>
+    <pre class="demo-code">{{`{{template "lcars-bar" "Section Title"}}`}}</pre>
+  </div>
+
+  {{template "lcars-bar" "PillGauge"}}
+  <div class="demo">
+    <div class="demo-render">
+      {{range .Gauges}}{{template "pill-gauge" .}}{{end}}
+    </div>
+    <pre class="demo-code">{{`{{range .Gauges}}{{template "pill-gauge" .}}{{end}}
+
+// view.Gauge{Label, Display, Frac (0..1), OK}
+// build with view.RenderGauge(spec, rawState, known)`}}</pre>
+  </div>
+
+  {{template "lcars-bar" "BarChart"}}
+  <div class="demo">
+    <div class="demo-render">{{template "bar-chart" .Bars}}</div>
+    <pre class="demo-code">{{`{{template "bar-chart" .Bars}}
+
+// .Bars is []view.Bar{Label, Display, Frac (0..1), Color}
+// build each with view.RenderBar(spec, rawState, known)`}}</pre>
+  </div>
+
+  {{template "lcars-bar" "Pillbox"}}
+  <div class="demo">
+    <div class="demo-render">
+      <div class="pillbox">
+        <div class="pill">Protect<span class="hop">on</span></div>
+        <div class="pill">Filter<span class="hop">on</span></div>
+        <div class="pill">Safe<span class="hop">off</span></div>
+        <div class="pill">DNS<span class="hop">14823</span></div>
+      </div>
+    </div>
+    <pre class="demo-code">{{`<div class="pillbox">
+  <div class="pill">Label<span class="hop">value</span></div>
+  ...
+</div>`}}</pre>
+  </div>
+
+  {{template "lcars-bar" "Toggle control (hx-post)"}}
+  <div class="demo">
+    <div class="demo-render">{{template "toggle" .Toggle}}</div>
+    <pre class="demo-code">{{`{{template "toggle" .Toggle}}
+
+// POSTs to action/{ID}; the server calls the HA service and
+// returns the updated button. serverToggle{ID, Label, State, On}.
+// This one toggles switch.kitchen_spare for real.`}}</pre>
+  </div>
+
+  {{template "lcars-bar" "Bezels (LCARS elbow frames)"}}
+  <div class="demo">
+    <div class="demo-render">
+      <div class="bezel top-bezel bezel--left"><div class="bezel-content" style="min-height:60px;padding:0.5rem 1rem;color:var(--gold)">top-bezel, sides=left</div></div>
+      <div class="bezel bottom-bezel bezel--both"><div class="bezel-content" style="min-height:60px;padding:0.5rem 1rem;color:var(--gold)">bottom-bezel, sides=both</div></div>
+    </div>
+    <pre class="demo-code">{{`<div class="bezel top-bezel bezel--left">
+  <div class="bezel-content">...</div>
+</div>
+<!-- top|bottom-bezel + bezel--left|right|both;
+     colour via style="--bezel-color: var(--mars)" -->`}}</pre>
+  </div>
+{{end}}

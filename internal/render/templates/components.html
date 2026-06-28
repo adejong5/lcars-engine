@@ -1,0 +1,33 @@
+{{/* Shared LCARS component library. Each block takes a view model and emits
+     the markup + classes the theme/components CSS expects. */}}
+
+{{/* lcars-bar: a titled section divider. Data: a string title. */}}
+{{define "lcars-bar"}}<div class="lcars-text-bar"><h3>{{.}}</h3></div>{{end}}
+
+{{/* cell: one live readout's inner fragment (label + value). Data: view.Tile.
+     Single line — also used as SSE event data. */}}
+{{define "cell"}}{{.Label}}<span class="hop">{{.Value}}</span>{{end}}
+
+{{/* pill-gauge: a value against a range, gradient fill clipped to Frac.
+     Data: view.Gauge {Label, Display, Frac, OK}. */}}
+{{define "pill-gauge"}}<div class="pill-gauge">
+  <div class="fill" style="{{clipinset .Frac}}"></div>
+  <span class="text">{{.Label}}</span>
+  <span class="text">{{.Display}}</span>
+</div>{{end}}
+
+{{/* bar-chart: a set of horizontal bars. Data: []view.Bar {Label, Display,
+     Frac, Color}. */}}
+{{define "bar-chart"}}<div class="bar-chart">
+  {{range .}}<div class="bar-row">
+    <span class="bar-label">{{.Label}}</span>
+    <div class="bar-track"><div class="bar-fill" style="{{widthpct .Frac}};background:{{css .Color}}"></div></div>
+    <span class="bar-value">{{.Display}}</span>
+  </div>{{end}}
+</div>{{end}}
+
+{{/* toggle: a control button that posts to its action endpoint and is replaced
+     by the updated fragment. Data: serverToggle {ID, Label, State, On}. */}}
+{{define "toggle"}}<form hx-post="action/{{.ID}}" hx-swap="outerHTML" style="display:inline">
+  <button type="submit" class="lcars-button {{if .On}}button-gold{{else}}button-gray{{end}}">{{.Label}} &middot; {{.State}}</button>
+</form>{{end}}

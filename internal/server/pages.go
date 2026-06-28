@@ -6,10 +6,19 @@ import (
 	"github.com/adejong5/lcars-engine/internal/view"
 )
 
-// cell is one live readout on a page: its entity id (also the element id and
-// SSE event name) and how to present it. opsCells defines the Operations page.
+// frameData is the common header data every page needs (used by frame.html).
+type frameData struct {
+	Title  string
+	Banner string
+	Base   string // ingress path prefix ("" when standalone)
+}
+
+// ── Operations dashboard ───────────────────────────────────────
+
+// cell is one live readout on the ops page: its entity id (also the element id
+// and SSE event name) and how to present it.
 type cell struct {
-	ID   string // entity id
+	ID   string
 	Spec view.TileSpec
 }
 
@@ -29,17 +38,9 @@ func cellByID(id string) (cell, bool) {
 	return cell{}, false
 }
 
-// cellView is a cell paired with its current rendered tile, for the templates.
 type cellView struct {
 	ID   string
 	Tile view.Tile
-}
-
-type pageData struct {
-	Title  string
-	Banner string
-	Base   string // ingress path prefix ("" when standalone)
-	Cells  []cellView
 }
 
 func (s *Server) renderCell(c cell) cellView {
@@ -47,14 +48,21 @@ func (s *Server) renderCell(c cell) cellView {
 	return cellView{ID: c.ID, Tile: view.RenderTile(c.Spec, st.State, ok)}
 }
 
-// handleOps renders the Operations page from current entity state.
+type opsData struct {
+	frameData
+	Cells []cellView
+}
+
 func (s *Server) handleOps(w http.ResponseWriter, r *http.Request) {
 	cells := make([]cellView, len(opsCells))
 	for i, c := range opsCells {
 		cells[i] = s.renderCell(c)
 	}
-	data := pageData{Title: "Operations", Banner: "HIGHBROOK • OPERATIONS", Base: BasePath(r), Cells: cells}
-	if err := s.render.Page(w, data); err != nil {
+	data := opsData{
+		frameData: frameData{Title: "Operations", Banner: "HIGHBROOK • OPERATIONS", Base: BasePath(r)},
+		Cells:     cells,
+	}
+	if err := s.render.Page(w, "ops", data); err != nil {
 		s.log.Error("render ops", "err", err)
 		http.Error(w, "render error", http.StatusInternalServerError)
 	}
@@ -67,8 +75,109 @@ func (s *Server) handleCell(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	if err := s.render.Cell(w, s.renderCell(c).Tile); err != nil {
+	if err := s.render.Fragment(w, "cell", s.renderCell(c).Tile); err != nil {
 		s.log.Error("render cell", "err", err)
+		http.Error(w, "render error", http.StatusInternalServerError)
+	}
+}
+
+// ── Controls (hx-post actions) ─────────────────────────────────
+
+// control is a toggle button bound to an on/off entity.
+type control struct {
+	ID     string // action id (URL) and element identity
+	Label  string
+	Domain string
+	Entity string
+}
+
+var controls = []control{
+	{ID: "kitchen_spare", Label: "Kitchen Spare", Domain: "switch", Entity: "switch.kitchen_spare"},
+}
+
+func controlByID(id string) (control, bool) {
+	for _, c := range controls {
+		if c.ID == id {
+			return c, true
+		}
+	}
+	return control{}, false
+}
+
+type serverToggle struct {
+	ID    string
+	Label string
+	State string
+	On    bool
+}
+
+func (s *Server) toggleView(c control) serverToggle {
+	on := false
+	if st, ok := s.src.State(c.Entity); ok {
+		on = st.State == "on"
+	}
+	return serverToggle{ID: c.ID, Label: c.Label, State: onoff(on), On: on}
+}
+
+// handleAction toggles a control's entity and returns the updated button. The
+// service set is reflected optimistically; SSE/poll reconcile the real state.
+func (s *Server) handleAction(w http.ResponseWriter, r *http.Request) {
+	c, ok := controlByID(r.PathValue("id"))
+	if !ok {
+		http.NotFound(w, r)
+		return
+	}
+	st, _ := s.src.State(c.Entity)
+	service := "turn_on"
+	if st.State == "on" {
+		service = "turn_off"
+	}
+	if err := s.src.CallService(c.Domain, service, nil, map[string]any{"entity_id": c.Entity}); err != nil {
+		s.log.Error("call service", "entity", c.Entity, "err", err)
+		http.Error(w, "service call failed", http.StatusBadGateway)
+		return
+	}
+	on := service == "turn_on"
+	tv := serverToggle{ID: c.ID, Label: c.Label, State: onoff(on), On: on}
+	if err := s.render.Fragment(w, "toggle", tv); err != nil {
+		s.log.Error("render toggle", "err", err)
+		http.Error(w, "render error", http.StatusInternalServerError)
+	}
+}
+
+func onoff(on bool) string {
+	if on {
+		return "ON"
+	}
+	return "OFF"
+}
+
+// ── Component demo (index) ─────────────────────────────────────
+
+type indexData struct {
+	frameData
+	Gauges []view.Gauge
+	Bars   []view.Bar
+	Toggle serverToggle
+}
+
+func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
+	data := indexData{
+		frameData: frameData{Title: "Components", Banner: "LCARS • COMPONENTS", Base: BasePath(r)},
+		Gauges: []view.Gauge{
+			{Label: "Cold", Display: "58.0°F", Frac: 0.10, OK: true},
+			{Label: "Comfort", Display: "71.0°F", Frac: 0.53, OK: true},
+			{Label: "Hot", Display: "84.0°F", Frac: 0.97, OK: true},
+		},
+		Bars: []view.Bar{
+			{Label: "Download", Display: "842 Mb/s", Frac: 0.84, Color: "var(--ice)"},
+			{Label: "Upload", Display: "31 Mb/s", Frac: 0.31, Color: "var(--african-violet)"},
+			{Label: "Ping", Display: "12 ms", Frac: 0.12, Color: "var(--gold)"},
+		},
+		Toggle: s.toggleView(controls[0]),
+	}
+	if err := s.render.Page(w, "index", data); err != nil {
+		s.log.Error("render index", "err", err)
 		http.Error(w, "render error", http.StatusInternalServerError)
 	}
 }

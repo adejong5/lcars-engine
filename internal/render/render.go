@@ -1,55 +1,86 @@
-// Package render serves the LCARS UI: embedded html/template pages and the
-// static theme assets (CSS, fonts, htmx). Pages are rendered server-side; the
-// browser receives plain HTML (Phase 7).
+// Package render serves the LCARS UI: embedded html/template pages, a shared
+// component library, and the static theme assets (CSS, fonts, htmx). Pages are
+// rendered server-side; the browser receives plain HTML.
 package render
 
 import (
 	"embed"
+	"fmt"
 	"html/template"
 	"io/fs"
 	"net/http"
+	"path"
 	"strings"
 )
 
-//go:embed templates/*.html
+//go:embed templates/*.html templates/pages/*.html
 var tmplFS embed.FS
 
 //go:embed static
 var staticFS embed.FS
 
-// Renderer holds the parsed page templates.
-type Renderer struct {
-	tmpl *template.Template
+// funcs are template helpers. The template.CSS-returning ones let pages set
+// dynamic inline styles (widths, colours) without html/template refusing them.
+var funcs = template.FuncMap{
+	"widthpct":  func(f float64) template.CSS { return template.CSS(fmt.Sprintf("width:%.2f%%", f*100)) },
+	"clipinset": func(f float64) template.CSS { return template.CSS(fmt.Sprintf("clip-path:inset(0 %.2f%% 0 0)", (1-f)*100)) },
+	"css":       func(s string) template.CSS { return template.CSS(s) },
 }
 
-// New parses the embedded templates. dev is reserved for future live-reload;
-// templates are embedded, so this parses once.
+// Renderer holds one parsed template set per page (each = frame + components +
+// that page), plus the shared set used to render standalone fragments.
+type Renderer struct {
+	pages map[string]*template.Template
+	base  *template.Template // frame + components; renders fragments like "cell"
+}
+
+// New parses the embedded templates.
 func New(dev bool) (*Renderer, error) {
-	t, err := template.New("render").ParseFS(tmplFS, "templates/*.html")
+	base, err := template.New("base").Funcs(funcs).ParseFS(tmplFS, "templates/frame.html", "templates/components.html")
 	if err != nil {
 		return nil, err
 	}
-	return &Renderer{tmpl: t}, nil
+
+	pageFiles, err := fs.Glob(tmplFS, "templates/pages/*.html")
+	if err != nil {
+		return nil, err
+	}
+	pages := make(map[string]*template.Template, len(pageFiles))
+	for _, pf := range pageFiles {
+		clone, err := base.Clone()
+		if err != nil {
+			return nil, err
+		}
+		if _, err := clone.ParseFS(tmplFS, pf); err != nil {
+			return nil, err
+		}
+		name := strings.TrimSuffix(path.Base(pf), ".html")
+		pages[name] = clone
+	}
+	return &Renderer{pages: pages, base: base}, nil
 }
 
-// Page renders a full page: the frame with the page's "content" filled in.
-func (r *Renderer) Page(w http.ResponseWriter, data any) error {
+// Page renders the named page (its "content") inside the frame.
+func (r *Renderer) Page(w http.ResponseWriter, name string, data any) error {
+	t, ok := r.pages[name]
+	if !ok {
+		return fmt.Errorf("render: unknown page %q", name)
+	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	return r.tmpl.ExecuteTemplate(w, "frame", data)
+	return t.ExecuteTemplate(w, "frame", data)
 }
 
-// Cell renders one live cell's inner fragment (label + value) to the writer,
-// used by the fallback-poll endpoint.
-func (r *Renderer) Cell(w http.ResponseWriter, data any) error {
+// Fragment renders a named standalone fragment (e.g. "cell", "toggle"), used by
+// the poll and action endpoints.
+func (r *Renderer) Fragment(w http.ResponseWriter, name string, data any) error {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	return r.tmpl.ExecuteTemplate(w, "cell", data)
+	return r.base.ExecuteTemplate(w, name, data)
 }
 
-// CellHTML renders one live cell's inner fragment to a string, used by the SSE
-// endpoint (single line, safe to put on a data: line).
+// CellHTML renders one live cell's inner fragment to a string (for SSE).
 func (r *Renderer) CellHTML(data any) (string, error) {
 	var b strings.Builder
-	if err := r.tmpl.ExecuteTemplate(&b, "cell", data); err != nil {
+	if err := r.base.ExecuteTemplate(&b, "cell", data); err != nil {
 		return "", err
 	}
 	return b.String(), nil

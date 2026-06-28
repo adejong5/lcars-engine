@@ -58,19 +58,34 @@ func TestCallServiceValidation(t *testing.T) {
 func TestOpsPageRenders(t *testing.T) {
 	h := newTestServer()
 	rr := httptest.NewRecorder()
+	h.ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/ops", nil))
+	if rr.Code != http.StatusOK {
+		t.Fatalf("GET /ops status %d", rr.Code)
+	}
+	body := rr.Body.String()
+	for _, s := range []string{`class="banner"`, "lcars-text-bar", "TheLCARS.com", `href="static/classic.css"`} {
+		if !strings.Contains(body, s) {
+			t.Fatalf("ops page missing %q", s)
+		}
+	}
+}
+
+func TestIndexDemoRenders(t *testing.T) {
+	h := newTestServer()
+	rr := httptest.NewRecorder()
 	h.ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/", nil))
 	if rr.Code != http.StatusOK {
 		t.Fatalf("GET / status %d", rr.Code)
 	}
 	body := rr.Body.String()
-	for _, s := range []string{`<base href="/">`, `class="banner"`, "lcars-text-bar", "TheLCARS.com", `href="static/classic.css"`} {
+	for _, s := range []string{`<base href="/">`, `class="pill-gauge"`, `class="bar-chart"`, "components.css"} {
 		if !strings.Contains(body, s) {
-			t.Fatalf("page missing %q", s)
+			t.Fatalf("demo page missing %q", s)
 		}
 	}
 }
 
-func TestOpsPageIngressBase(t *testing.T) {
+func TestIngressBase(t *testing.T) {
 	h := newTestServer()
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	req.Header.Set("X-Ingress-Path", "/api/hassio_ingress/xyz/")
@@ -78,6 +93,25 @@ func TestOpsPageIngressBase(t *testing.T) {
 	h.ServeHTTP(rr, req)
 	if !strings.Contains(rr.Body.String(), `<base href="/api/hassio_ingress/xyz/">`) {
 		t.Fatal("ingress base href not applied")
+	}
+}
+
+func TestActionToggle(t *testing.T) {
+	h := newTestServer()
+	rr := httptest.NewRecorder()
+	h.ServeHTTP(rr, httptest.NewRequest(http.MethodPost, "/action/kitchen_spare", nil))
+	if rr.Code != http.StatusOK {
+		t.Fatalf("POST /action/kitchen_spare status %d", rr.Code)
+	}
+	body := rr.Body.String()
+	if !strings.Contains(body, "Kitchen Spare") || !strings.Contains(body, "hx-post=") {
+		t.Fatalf("action did not return the toggle fragment: %s", body)
+	}
+
+	rr = httptest.NewRecorder()
+	h.ServeHTTP(rr, httptest.NewRequest(http.MethodPost, "/action/nope", nil))
+	if rr.Code != http.StatusNotFound {
+		t.Fatalf("unknown action status %d, want 404", rr.Code)
 	}
 }
 
