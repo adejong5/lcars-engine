@@ -120,12 +120,16 @@
 .lcars-accordion .acc-body { padding: 0.75rem 1rem; background: rgba(255, 255, 255, 0.04); }
 
 /* ── Frame fixes (our overrides; classic.css stays vendored) ── */
-/* panel-2 has no height of its own, so panel-1-button can sit low enough to
-   cover the top of the right-frame-top elbow. The elbow's visible arc is
-   bar-height (28px) + corner radius (60px) = 88px tall at the full/mid
-   breakpoints, so panel-2 needs at least that to clear it. (Narrow screens use
-   a smaller radius/bar-height and already clear.) */
-.left-frame-top .panel-2 { min-height: 88px; }
+/* panel-2 has no height of its own, so the square panel-1-button sits low
+   enough to cover the top elbow. Two curves must clear, both measured up from
+   the row bottom where panel-1-button's bottom rests (= panel-2's height):
+     - inner arc (right-frame-top:after): bar-height 28px + radius 60px = 88px
+     - outer arc (left-frame-top --radius-top): 160px  ← the larger of the two
+   .left-frame-top doesn't clip children, so the button's square corner overlaps
+   the parent's rounded one until panel-2 is at least the outer radius (160px).
+   (Narrow screens use smaller radii and already clear; this flat value
+   over-pads them harmlessly.) */
+.left-frame-top .panel-2 { min-height: 160px; }
 
 /* ── Demo page (the component showcase at /) ───────────────── */
 .demo .level-meter-box { width: 40px; height: 180px; }
