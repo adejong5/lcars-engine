@@ -70,5 +70,6 @@
 </ul>{{end}}
 
 {{/* nav-buttons: the top-frame button row (lives in topFrame). Data: a list of
-     {Label, Href}. */}}
-{{define "nav-buttons"}}<nav>{{range .}}<a href="{{.Href}}"><button>{{.Label}}</button></a>{{end}}</nav>{{end}}
+     {Label, Href}. The theme styles `nav a` and `nav button` identically with
+     position-based colours, so use a bare <a> per item (no nested button). */}}
+{{define "nav-buttons"}}<nav>{{range .}}<a href="{{.Href}}">{{.Label}}</a>{{end}}</nav>{{end}}
