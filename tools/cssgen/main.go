@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -66,31 +67,32 @@ func compatName(src string) string {
 	return strings.TrimSuffix(src, ext) + ".compat" + ext
 }
 
+// textBoxDecl matches a whole `text-box: …;` declaration line.
+var textBoxDecl = regexp.MustCompile(`(?m)^[ \t]*text-box:[^;]*;[ \t]*\r?\n?`)
+
 // adaptTextBox handles `text-box: trim-both cap alphabetic` (Chromium 133 /
-// Safari 18.2). Old browsers ignore the declaration, so it's harmless to leave
-// in place (modern browsers still get the tighter centering) — but without the
-// trim the text keeps its full leading and can clip in fixed-height boxes such
-// as the LCARS bar heading. There is no CSS equivalent to re-trim, so we append
-// targeted compensation inside `@supports not (text-box: …)`, which only
-// non-supporting browsers apply. Seeded with the known bar-heading fix; extend
-// as on-device testing surfaces more clipped elements.
+// Safari 18.2) — precise cap-height trimming only the newest browsers support.
+// Rather than carry two rendering paths (an @supports fallback isn't
+// pixel-identical anyway), the compat build *drops* text-box so every browser
+// renders the same, then restores acceptable centering on the elements that
+// relied on it. Verify the formerly-trimmed elements (bar headings, banner,
+// panels) on a modern browser and add rules below for any that look off.
 func adaptTextBox(css string) (string, int) {
-	n := strings.Count(css, "text-box:")
+	stripped := textBoxDecl.ReplaceAllString(css, "")
+	n := strings.Count(css, "text-box:") - strings.Count(stripped, "text-box:")
 	if n == 0 {
 		return css, 0
 	}
-	return css + "\n" + textBoxFallback, n
+	return stripped + "\n" + textBoxCentering, n
 }
 
-const textBoxFallback = `/* cssgen: compensation for browsers without text-box trimming */
-@supports not (text-box: trim-both cap alphabetic) {
-  .lcars-text-bar.lcars-text-bar h2,
-  .lcars-text-bar.lcars-text-bar h3,
-  .lcars-text-bar.lcars-text-bar h4,
-  .lcars-text-bar.lcars-text-bar span {
-    height: auto;
-    align-self: center;
-    line-height: 1;
-  }
+const textBoxCentering = `/* cssgen: text-box dropped for compat; explicit centering for headings that relied on it */
+.lcars-text-bar h2,
+.lcars-text-bar h3,
+.lcars-text-bar h4,
+.lcars-text-bar span {
+  height: auto;
+  align-self: center;
+  line-height: 1;
 }
 `

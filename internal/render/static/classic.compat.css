@@ -1067,7 +1067,6 @@ button:active {
 .dc-row-5,
 .dc-row-6,
 .dc-row-7 {
-	text-box: trim-both cap alphabetic;
 	height: var(--dc-row-height);
 }
 
@@ -1893,7 +1892,6 @@ h1, h2, h3, h4	{
 	font-weight: normal;
 	line-height: 1.2;
 	text-transform: uppercase;
-	text-box: trim-both cap alphabetic;
 }
 
 h1	{
@@ -1938,7 +1936,6 @@ h4 {
 
 p {
 	margin-block: 1.75rem;
-	text-box: trim-both cap alphabetic;
 }
 
 .caption	{
@@ -1983,7 +1980,6 @@ blockquote {
 	padding-block: .25rem;
 	padding-left: 1.5rem;
 	position: relative;
-	text-box: trim-both cap alphabetic;
 }
 
 blockquote::before {
@@ -2269,7 +2265,6 @@ NOTE: Gallery is experimental and still under development.
 
 .gallery li div {
 	padding-block: .6rem;
-	text-box: trim-both cap alphabetic;
 }
 
 .thumbs img {
@@ -2294,7 +2289,6 @@ NOTE: Gallery is experimental and still under development.
 	position: relative;
 	padding-block: .45rem;
 	padding-left: 2.25rem;
-	text-box: trim-both cap alphabetic;
 }
 
 .lcars-list li::before {
@@ -2373,7 +2367,6 @@ NOTE: Gallery is experimental and still under development.
 	text-transform: uppercase;
 	color: var(--lcars-bar-text-color);
 	z-index: 1;
-	text-box: trim-both cap alphabetic;
 }
 
 .lcars-text-bar::before {
@@ -3012,14 +3005,12 @@ footer:has(.footer-frame) {
    	line-height: 1rem;
    }
 }
-/* cssgen: compensation for browsers without text-box trimming */
-@supports not (text-box: trim-both cap alphabetic) {
-  .lcars-text-bar.lcars-text-bar h2,
-  .lcars-text-bar.lcars-text-bar h3,
-  .lcars-text-bar.lcars-text-bar h4,
-  .lcars-text-bar.lcars-text-bar span {
-    height: auto;
-    align-self: center;
-    line-height: 1;
-  }
+/* cssgen: text-box dropped for compat; explicit centering for headings that relied on it */
+.lcars-text-bar h2,
+.lcars-text-bar h3,
+.lcars-text-bar h4,
+.lcars-text-bar span {
+  height: auto;
+  align-self: center;
+  line-height: 1;
 }
