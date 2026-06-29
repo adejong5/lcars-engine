@@ -63,7 +63,7 @@ func TestOpsPageRenders(t *testing.T) {
 		t.Fatalf("GET /ops status %d", rr.Code)
 	}
 	body := rr.Body.String()
-	for _, s := range []string{`class="banner"`, "lcars-text-bar", "TheLCARS.com", `href="static/classic.css"`} {
+	for _, s := range []string{`class="banner"`, "lcars-text-bar", "TheLCARS.com", `href="static/classic.compat.css"`} {
 		if !strings.Contains(body, s) {
 			t.Fatalf("ops page missing %q", s)
 		}
@@ -78,7 +78,7 @@ func TestIndexDemoRenders(t *testing.T) {
 		t.Fatalf("GET / status %d", rr.Code)
 	}
 	body := rr.Body.String()
-	for _, s := range []string{`<base href="/">`, `class="pill-gauge"`, `class="bar-chart"`, "components.css"} {
+	for _, s := range []string{`<base href="/">`, `class="pill-gauge"`, `class="bar-chart"`, "components.compat.css"} {
 		if !strings.Contains(body, s) {
 			t.Fatalf("demo page missing %q", s)
 		}
