@@ -121,15 +121,27 @@
 
 /* ── Frame fixes (our overrides; classic.css stays vendored) ── */
 /* panel-2 has no height of its own, so the square panel-1-button sits low
-   enough to cover the top elbow. Two curves must clear, both measured up from
-   the row bottom where panel-1-button's bottom rests (= panel-2's height):
-     - inner arc (right-frame-top:after): bar-height 28px + radius 60px = 88px
-     - outer arc (left-frame-top --radius-top): 160px  ← the larger of the two
-   .left-frame-top doesn't clip children, so the button's square corner overlaps
-   the parent's rounded one until panel-2 is at least the outer radius (160px).
-   (Narrow screens use smaller radii and already clear; this flat value
-   over-pads them harmlessly.) */
-.left-frame-top .panel-2 { min-height: 160px; }
+   enough to cover the top elbow. Its bottom rests at panel-2's height, which
+   must clear the taller of the two elbow arcs (both measured from the row
+   bottom):
+     - outer arc = left-frame-top bottom-left radius (--radius-top)
+     - inner arc = bar-height + right-frame-top:after radius (--radius-content-top)
+
+   The theme stores those radii as border-radius *shorthands* ("0 0 0 160px"),
+   which calc()/max() can't read, so we mirror just their bottom-left lengths
+   here at the theme's breakpoints. --bar-height is a single length, so we use
+   the theme's variable directly. (calc() and max() are no newer than the
+   clamp() the theme already relies on.) Keep these in sync with classic.css if
+   it's updated upstream. */
+:root                      { --elbow-outer-radius: 160px; --elbow-inner-radius: 60px; }
+@media (max-width: 1500px) { :root { --elbow-outer-radius: 130px; --elbow-inner-radius: 60px; } }
+@media (max-width: 1300px) { :root { --elbow-outer-radius: 100px; --elbow-inner-radius: 40px; } }
+@media (max-width: 750px)  { :root { --elbow-outer-radius: 80px;  --elbow-inner-radius: 34px; } }
+@media (max-width: 525px)  { :root { --elbow-outer-radius: 40px;  --elbow-inner-radius: 34px; } }
+
+.left-frame-top .panel-2 {
+  min-height: max(var(--elbow-outer-radius), calc(var(--bar-height) + var(--elbow-inner-radius)));
+}
 
 /* ── Demo page (the component showcase at /) ───────────────── */
 .demo .level-meter-box { width: 40px; height: 180px; }
