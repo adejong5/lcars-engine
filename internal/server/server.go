@@ -137,6 +137,7 @@ func (s *Server) logRequests(next http.Handler) http.Handler {
 			"path", r.URL.Path,
 			"status", rec.status,
 			"dur", time.Since(start).String(),
+			"ua", r.UserAgent(),
 		)
 	})
 }
