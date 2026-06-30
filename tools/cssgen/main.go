@@ -86,16 +86,19 @@ func adaptTextBox(css string) (string, int) {
 	return stripped + "\n" + textBoxCentering, n
 }
 
-const textBoxCentering = `/* cssgen: text-box dropped for compat. Keep the theme's height (taller than the
-   bar) so the black box covers it with margin — don't shrink it to auto, which
-   leaves a sub-pixel colored sliver — and center the text inside with flex. */
+const textBoxCentering = `/* cssgen: text-box dropped for compat. Size the black box to the text
+   (height:auto) and center it on the bar (align-self:center) so the text reads
+   centered; add symmetric vertical padding so the box over-covers the bar with
+   margin (no sub-pixel colored sliver). padding-top/bottom, not the ~2020
+   logical padding-block. */
 .lcars-text-bar h2,
 .lcars-text-bar h3,
 .lcars-text-bar h4,
 .lcars-text-bar span {
-  display: flex;
-  align-items: center;
+  height: auto;
   align-self: center;
   line-height: 1;
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
 }
 `
