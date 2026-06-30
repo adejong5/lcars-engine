@@ -98,7 +98,10 @@ const textBoxCentering = `/* cssgen: text-box dropped for compat. Size the black
   height: auto;
   align-self: center;
   line-height: 1;
-  padding-top: 0.4rem;
-  padding-bottom: 0.4rem;
+  /* symmetric 0.4rem over-covers the bar (no sliver); the +/-0.07em bias shifts
+     the text up to optically center the cap height, since the glyphs sit ~0.07em
+     low in the line box without text-box trimming (measured via Playwright). */
+  padding-top: calc(0.4rem - 0.07em);
+  padding-bottom: calc(0.4rem + 0.07em);
 }
 `
