@@ -3005,21 +3005,31 @@ footer:has(.footer-frame) {
    	line-height: 1rem;
    }
 }
-/* cssgen: text-box dropped for compat. Size the black box to the text
-   (height:auto) and center it on the bar (align-self:center) so the text reads
-   centered; add symmetric vertical padding so the box over-covers the bar with
-   margin (no sub-pixel colored sliver). padding-top/bottom, not the ~2020
-   logical padding-block. */
+/* cssgen: text-box dropped for compat. The heading (black title box) is taller
+   than the bar, so it must be centered on it. Flex-centering an overflowing item
+   is inconsistent across engines (Firefox drifts it low), so center via
+   absolute + translateY(-50%), which is engine-consistent. Then a small padding
+   bias shifts the text up to optically center the cap height (glyphs sit ~0.07em
+   low in the line box without text-box trimming — same in both engines once the
+   box is correctly centered). Playwright-measured. */
+.lcars-text-bar { position: relative; }
 .lcars-text-bar h2,
 .lcars-text-bar h3,
 .lcars-text-bar h4,
 .lcars-text-bar span {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
   height: auto;
-  align-self: center;
   line-height: 1;
-  /* symmetric 0.4rem over-covers the bar (no sliver); the +/-0.07em bias shifts
-     the text up to optically center the cap height, since the glyphs sit ~0.07em
-     low in the line box without text-box trimming (measured via Playwright). */
-  padding-top: calc(0.4rem - 0.07em);
-  padding-bottom: calc(0.4rem + 0.07em);
+  padding-top: calc(0.3em - 0.07em);
+  padding-bottom: calc(0.3em + 0.07em);
+}
+.lcars-text-bar.the-end h2,
+.lcars-text-bar.the-end h3,
+.lcars-text-bar.the-end h4,
+.lcars-text-bar.the-end span {
+  left: auto;
+  right: 0;
 }
