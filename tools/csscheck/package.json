@@ -1,0 +1,13 @@
+{
+  "name": "csscheck",
+  "private": true,
+  "type": "module",
+  "description": "Playwright verification that the cssgen compat build renders identically to the modern theme. Start the app (default http://localhost:8088/, override with CSSCHECK_URL), then: npm run check. First time: npm install && npx playwright install chromium firefox.",
+  "scripts": {
+    "check": "node clamp.mjs && node flexgap.mjs && node panel2.mjs && node logical.mjs && node textbox.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.61.1",
+    "pngjs": "^7.0.0"
+  }
+}
