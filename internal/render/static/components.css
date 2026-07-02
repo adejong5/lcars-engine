@@ -127,21 +127,23 @@
      - outer arc = left-frame-top bottom-left radius (--radius-top)
      - inner arc = bar-height + right-frame-top:after radius (--radius-content-top)
 
-   The theme stores those radii as border-radius *shorthands* ("0 0 0 160px"),
-   which calc()/max() can't read, so we mirror just their bottom-left lengths
-   here at the theme's breakpoints. --bar-height is a single length, so we use
-   the theme's variable directly. (calc() and max() are no newer than the
-   clamp() the theme already relies on.) Keep these in sync with classic.css if
-   it's updated upstream. */
-:root                      { --elbow-outer-radius: 160px; --elbow-inner-radius: 60px; }
-@media (max-width: 1500px) { :root { --elbow-outer-radius: 130px; --elbow-inner-radius: 60px; } }
-@media (max-width: 1300px) { :root { --elbow-outer-radius: 100px; --elbow-inner-radius: 40px; } }
-@media (max-width: 750px)  { :root { --elbow-outer-radius: 80px;  --elbow-inner-radius: 34px; } }
-@media (max-width: 525px)  { :root { --elbow-outer-radius: 40px;  --elbow-inner-radius: 34px; } }
+   That is max(outer, bar-height + inner), but max() is 2020-era and the compat
+   build targets ~2017, so the winner is precomputed per theme breakpoint from
+   classic.css's values (radius shorthands can't be read by calc() anyway):
 
-.left-frame-top .panel-2 {
-  min-height: max(var(--elbow-outer-radius), calc(var(--bar-height) + var(--elbow-inner-radius)));
-}
+     breakpoint  outer  bar+inner  min-height
+     base        160    28+60= 88     160px
+     <=1500px    130    24+60= 84     130px
+     <=1300px    100    20+40= 60     100px
+     <= 750px     80    16+34= 50      80px
+     <= 525px     40    10+34= 44      44px   (only here the inner arc wins)
+
+   Keep in sync with classic.css if it's updated upstream. */
+.left-frame-top .panel-2   { min-height: 160px; }
+@media (max-width: 1500px) { .left-frame-top .panel-2 { min-height: 130px; } }
+@media (max-width: 1300px) { .left-frame-top .panel-2 { min-height: 100px; } }
+@media (max-width: 750px)  { .left-frame-top .panel-2 { min-height: 80px; } }
+@media (max-width: 525px)  { .left-frame-top .panel-2 { min-height: 44px; } }
 
 /* ── Demo page (the component showcase at /) ───────────────── */
 .demo .level-meter-box { width: 40px; height: 180px; }
