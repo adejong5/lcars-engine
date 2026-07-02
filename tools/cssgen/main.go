@@ -120,16 +120,78 @@ var textBoxDecl = regexp.MustCompile(`(?m)^[ \t]*text-box:[^;]*;[ \t]*\r?\n?`)
 // Safari 18.2) — precise cap-height trimming only the newest browsers support.
 // Rather than carry two rendering paths (an @supports fallback isn't
 // pixel-identical anyway), the compat build *drops* text-box so every browser
-// renders the same, then restores acceptable centering on the elements that
-// relied on it. Verify the formerly-trimmed elements (bar headings, banner,
-// panels) on a modern browser and add rules below for any that look off.
+// renders the same.
+//
+// The untrimmed design is not ours to invent: Firefox has no text-box, so the
+// theme's own `@-moz-document url-prefix()` block IS the author's no-text-box
+// rendering — tighter h1–h4/p margins (1.15rem vs 1.75rem), reduced main
+// padding, .imgf-title h4 pull-up, .postmeta, .lcars-list markers, .meta-data
+// height. Upstream, only Firefox applies it; in the compat build no browser
+// has text-box, so those compensations are hoisted to unconditional rules for
+// everyone (audited: the elements the author leaves uncompensated — data
+// cascade rows, gallery captions, blockquote — shift <2px untrimmed).
+//
+// The one exception is the author's .lcars-text-bar heading fix (top: -.7vh):
+// it's excluded from the hoist because the transform-based centering appended
+// below replaces it (Playwright-measured, engine-consistent — see comment).
 func adaptTextBox(css string) (string, int) {
 	stripped := textBoxDecl.ReplaceAllString(css, "")
 	n := strings.Count(css, "text-box:") - strings.Count(stripped, "text-box:")
 	if n == 0 {
 		return css, 0
 	}
+	stripped = hoistMozBlock(stripped)
 	return stripped + "\n" + textBoxCentering, n
+}
+
+// hoistMozBlock unwraps the theme's `@-moz-document url-prefix() { … }` block —
+// the author's no-text-box compensations (see adaptTextBox) — so its rules
+// apply on every browser, minus the .lcars-text-bar rules that our appended
+// centering supersedes. The rules stay at the block's position (end of file),
+// so they override the base rules exactly as they do in upstream Firefox.
+func hoistMozBlock(css string) string {
+	i := strings.Index(css, "@-moz-document")
+	if i < 0 {
+		return css
+	}
+	brace := strings.Index(css[i:], "{")
+	if brace < 0 {
+		return css
+	}
+	brace += i
+	k := blockEnd(css, brace)
+	contents := dropRules(css[brace+1:k-1], ".lcars-text-bar")
+	return css[:i] +
+		"/* cssgen: the @-moz-document url-prefix() block is the theme's own\n" +
+		"   no-text-box rendering (Firefox never shipped text-box). The compat\n" +
+		"   build drops text-box everywhere, so these apply unconditionally;\n" +
+		"   the .lcars-text-bar rules are replaced by the centering below. */" +
+		contents + css[k:]
+}
+
+// dropRules removes top-level rules whose selector contains sub, keeping
+// everything else byte-for-byte.
+func dropRules(css, sub string) string {
+	var out strings.Builder
+	i := 0
+	for i < len(css) {
+		brace, semi := nextDelim(css, i)
+		if semi != -1 {
+			out.WriteString(css[i : semi+1])
+			i = semi + 1
+			continue
+		}
+		if brace == -1 {
+			out.WriteString(css[i:])
+			break
+		}
+		k := blockEnd(css, brace)
+		if !strings.Contains(css[i:brace], sub) {
+			out.WriteString(css[i:k])
+		}
+		i = k
+	}
+	return out.String()
 }
 
 const textBoxCentering = `/* cssgen: text-box dropped for compat. The heading (black title box) is taller
@@ -194,6 +256,67 @@ func adaptHas(css string) (string, int) {
 // cssComment matches a /* … */ CSS comment (used to tell if a block is empty).
 var cssComment = regexp.MustCompile(`/\*[\s\S]*?\*/`)
 
+// skipComment returns the index just past a /*…*/ comment starting at i, or i
+// unchanged if s[i:] doesn't start one. The node walkers use it so a ; { or }
+// inside a comment can't be mistaken for CSS structure.
+func skipComment(s string, i int) int {
+	if strings.HasPrefix(s[i:], "/*") {
+		if end := strings.Index(s[i+2:], "*/"); end >= 0 {
+			return i + 2 + end + 2
+		}
+		return len(s)
+	}
+	return i
+}
+
+// cleanSelector strips comments and collapses whitespace in a rule header, for
+// use in generated rules (@media fallbacks etc.) where the original header's
+// comments and line breaks would be noise — or worse, get split from their
+// opener.
+func cleanSelector(header string) string {
+	return strings.Join(strings.Fields(cssComment.ReplaceAllString(header, "")), " ")
+}
+
+// nextDelim finds the next structural '{' or ';' from i, skipping comments.
+// Exactly one of the results is >= 0 (whichever comes first), or both are -1.
+func nextDelim(css string, i int) (brace, semi int) {
+	for k := i; k < len(css); k++ {
+		if j := skipComment(css, k); j > k {
+			k = j - 1
+			continue
+		}
+		if css[k] == '{' {
+			return k, -1
+		}
+		if css[k] == ';' {
+			return -1, k
+		}
+	}
+	return -1, -1
+}
+
+// blockEnd returns the index just past the '}' that closes the block whose '{'
+// sits at brace, skipping comments while counting depth.
+func blockEnd(css string, brace int) int {
+	depth := 1
+	for k := brace + 1; k < len(css); k++ {
+		if j := skipComment(css, k); j > k {
+			k = j - 1
+			continue
+		}
+		switch css[k] {
+		case '{':
+			depth++
+		case '}':
+			depth--
+			if depth == 0 {
+				return k + 1
+			}
+		}
+	}
+	return len(css)
+}
+
 // isBlank reports whether s is only whitespace and comments (no rules/decls).
 func isBlank(s string) bool {
 	return strings.TrimSpace(cssComment.ReplaceAllString(s, "")) == ""
@@ -207,18 +330,8 @@ func stripHas(css string) (string, int) {
 	var out strings.Builder
 	total, i := 0, 0
 	for i < len(css) {
-		brace, semi := -1, -1
-		for k := i; k < len(css); k++ {
-			if css[k] == '{' {
-				brace = k
-				break
-			}
-			if css[k] == ';' {
-				semi = k
-				break
-			}
-		}
-		if semi != -1 && (brace == -1 || semi < brace) { // e.g. @charset "…";
+		brace, semi := nextDelim(css, i)
+		if semi != -1 { // e.g. @charset "…";
 			out.WriteString(css[i : semi+1])
 			i = semi + 1
 			continue
@@ -228,17 +341,9 @@ func stripHas(css string) (string, int) {
 			break
 		}
 		header := css[i:brace]
-		depth, k := 1, brace+1
-		for ; k < len(css) && depth > 0; k++ {
-			switch css[k] {
-			case '{':
-				depth++
-			case '}':
-				depth--
-			}
-		}
+		k := blockEnd(css, brace)
 		body := css[brace+1 : k-1]
-		if strings.HasPrefix(strings.TrimSpace(header), "@") {
+		if strings.HasPrefix(cleanSelector(header), "@") {
 			inner, n := stripHas(body)
 			total += n
 			if n > 0 && isBlank(inner) { // at-rule emptied by the strip: drop it
@@ -508,18 +613,8 @@ func rewriteGap(css string) (string, int) {
 	var out strings.Builder
 	total, i := 0, 0
 	for i < len(css) {
-		brace, semi := -1, -1
-		for k := i; k < len(css); k++ {
-			if css[k] == '{' {
-				brace = k
-				break
-			}
-			if css[k] == ';' {
-				semi = k
-				break
-			}
-		}
-		if semi != -1 && (brace == -1 || semi < brace) {
+		brace, semi := nextDelim(css, i)
+		if semi != -1 {
 			out.WriteString(css[i : semi+1])
 			i = semi + 1
 			continue
@@ -529,17 +624,9 @@ func rewriteGap(css string) (string, int) {
 			break
 		}
 		header := css[i:brace]
-		depth, k := 1, brace+1
-		for ; k < len(css) && depth > 0; k++ {
-			switch css[k] {
-			case '{':
-				depth++
-			case '}':
-				depth--
-			}
-		}
+		k := blockEnd(css, brace)
 		body := css[brace+1 : k-1]
-		sel := strings.TrimSpace(header)
+		sel := cleanSelector(header)
 		if strings.HasPrefix(sel, "@") {
 			inner, n := rewriteGap(body)
 			total += n
@@ -648,18 +735,8 @@ func fold(side, existing, gap string) string {
 func eachRule(css string, fn func(sel, body string)) {
 	i := 0
 	for i < len(css) {
-		brace, semi := -1, -1
-		for k := i; k < len(css); k++ {
-			if css[k] == '{' {
-				brace = k
-				break
-			}
-			if css[k] == ';' {
-				semi = k
-				break
-			}
-		}
-		if semi != -1 && (brace == -1 || semi < brace) {
+		brace, semi := nextDelim(css, i)
+		if semi != -1 {
 			i = semi + 1
 			continue
 		}
@@ -667,17 +744,9 @@ func eachRule(css string, fn func(sel, body string)) {
 			break
 		}
 		header := css[i:brace]
-		depth, k := 1, brace+1
-		for ; k < len(css) && depth > 0; k++ {
-			switch css[k] {
-			case '{':
-				depth++
-			case '}':
-				depth--
-			}
-		}
+		k := blockEnd(css, brace)
 		body := css[brace+1 : k-1]
-		if sel := strings.TrimSpace(header); strings.HasPrefix(sel, "@") {
+		if sel := cleanSelector(header); strings.HasPrefix(sel, "@") {
 			eachRule(body, fn)
 		} else {
 			fn(sel, body)
@@ -781,18 +850,8 @@ func rewriteBlock(css string) (string, int) {
 	var out strings.Builder
 	total, i := 0, 0
 	for i < len(css) {
-		brace, semi := -1, -1
-		for k := i; k < len(css); k++ {
-			if css[k] == '{' {
-				brace = k
-				break
-			}
-			if css[k] == ';' {
-				semi = k
-				break
-			}
-		}
-		if semi != -1 && (brace == -1 || semi < brace) { // a statement like @charset "…";
+		brace, semi := nextDelim(css, i)
+		if semi != -1 { // a statement like @charset "…";
 			out.WriteString(css[i : semi+1])
 			i = semi + 1
 			continue
@@ -802,22 +861,14 @@ func rewriteBlock(css string) (string, int) {
 			break
 		}
 		header := css[i:brace] // includes any leading comments/whitespace
-		depth, k := 1, brace+1
-		for ; k < len(css) && depth > 0; k++ {
-			switch css[k] {
-			case '{':
-				depth++
-			case '}':
-				depth--
-			}
-		}
+		k := blockEnd(css, brace)
 		body := css[brace+1 : k-1]
-		if strings.HasPrefix(strings.TrimSpace(header), "@") {
+		if strings.HasPrefix(cleanSelector(header), "@") {
 			inner, n := rewriteBlock(body)
 			total += n
 			out.WriteString(header + "{" + inner + "}")
 		} else {
-			newBody, media, n := rewriteRule(strings.TrimSpace(header), body)
+			newBody, media, n := rewriteRule(cleanSelector(header), body)
 			total += n
 			out.WriteString(header + "{" + newBody + "}" + media)
 		}

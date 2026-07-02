@@ -301,8 +301,6 @@ button:active {
 	display: flex;
 	width: 100%;
 }
-/* Ultra Layout elements */
-
 .wrap-everything > * + * { margin-left: 10px; }
 
 .wrap-standard {
@@ -354,8 +352,8 @@ button:active {
 	}
 
 	.wrap-everything {
-		column-gap: 5px;
 	}
+.wrap-everything > * + * { margin-left: 5px; }
 }
 
 @media (max-width: 1500px) {
@@ -929,10 +927,8 @@ button:active {
 	transition: width 1s;
 }
 /* cssgen: clamp() removed; the breakpoints below reproduce its MIN/MAX bounds so an old browser matches a modern one. */
-@media (max-width: 840px) { .left-frame-top,
-.left-frame { font-size: .875rem; } }
-@media (min-width: 960px) { .left-frame-top,
-.left-frame { font-size: 1rem; } }
+@media (max-width: 840px) { .left-frame-top, .left-frame { font-size: .875rem; } }
+@media (min-width: 960px) { .left-frame-top, .left-frame { font-size: 1rem; } }
 
 .left-frame-top	{
 	background-color: var(--left-frame-top-color);
@@ -1062,17 +1058,9 @@ button:active {
  	padding-left: 3vw;
 }
 /* cssgen: clamp() removed; the breakpoints below reproduce its MIN/MAX bounds so an old browser matches a modern one. */
-@media (max-width: 667px) { /* Data Cascade 2025 */
-
-.data-cascade-wrapper { padding-left: 20px; } }
-@media (min-width: 1667px) { /* Data Cascade 2025 */
-
-.data-cascade-wrapper { padding-left: 50px; } }
-/* Data Cascade 2025 */
-
+@media (max-width: 667px) { .data-cascade-wrapper { padding-left: 20px; } }
+@media (min-width: 1667px) { .data-cascade-wrapper { padding-left: 50px; } }
 .data-cascade-wrapper { margin-left: calc(.5rem / -2); margin-right: calc(.5rem / -2); }
-/* Data Cascade 2025 */
-
 .data-cascade-wrapper > * { margin-left: calc(.5rem / 2); margin-right: calc(.5rem / 2); }
 
 .data-column {
@@ -2300,23 +2288,7 @@ NOTE: Gallery is experimental and still under development.
 	text-align: center;
 	font-size: .875rem;
 }
-/* 
-
-Gallery
-
-NOTE: Gallery is experimental and still under development.
-
-*/
-
 .gallery { margin-left: calc(.75rem / -2); margin-right: calc(.75rem / -2); margin-top: calc(.75rem / -2); margin-bottom: calc(.75rem / -2); }
-/* 
-
-Gallery
-
-NOTE: Gallery is experimental and still under development.
-
-*/
-
 .gallery > * { margin-left: calc(.75rem / 2); margin-right: calc(.75rem / 2); margin-top: calc(.75rem / 2); margin-bottom: calc(.75rem / 2); }
 
 .gallery img {
@@ -2440,22 +2412,10 @@ NOTE: Gallery is experimental and still under development.
 	z-index: 1;
 }
 /* cssgen: clamp() removed; the breakpoints below reproduce its MIN/MAX bounds so an old browser matches a modern one. */
-@media (max-height: 364px) { .lcars-text-bar h2,
-.lcars-text-bar h3,
-.lcars-text-bar h4,
-.lcars-text-bar span { height: 20px; } }
-@media (min-height: 1091px) { .lcars-text-bar h2,
-.lcars-text-bar h3,
-.lcars-text-bar h4,
-.lcars-text-bar span { height: 60px; } }
-@media (max-height: 378px) { .lcars-text-bar h2,
-.lcars-text-bar h3,
-.lcars-text-bar h4,
-.lcars-text-bar span { font-size: 17px; } }
-@media (min-height: 1022px) { .lcars-text-bar h2,
-.lcars-text-bar h3,
-.lcars-text-bar h4,
-.lcars-text-bar span { font-size: 46px; } }
+@media (max-height: 364px) { .lcars-text-bar h2, .lcars-text-bar h3, .lcars-text-bar h4, .lcars-text-bar span { height: 20px; } }
+@media (min-height: 1091px) { .lcars-text-bar h2, .lcars-text-bar h3, .lcars-text-bar h4, .lcars-text-bar span { height: 60px; } }
+@media (max-height: 378px) { .lcars-text-bar h2, .lcars-text-bar h3, .lcars-text-bar h4, .lcars-text-bar span { font-size: 17px; } }
+@media (min-height: 1022px) { .lcars-text-bar h2, .lcars-text-bar h3, .lcars-text-bar h4, .lcars-text-bar span { font-size: 46px; } }
 
 .lcars-text-bar::before {
 	content: '';
@@ -2889,12 +2849,8 @@ footer {
 	--footer-bar-height: 1rem;
 }
 /* cssgen: clamp() removed; the breakpoints below reproduce its MIN/MAX bounds so an old browser matches a modern one. */
-@media (max-width: 667px) { /* Footer */
-
-footer { padding-left: 20px; } }
-@media (min-width: 1667px) { /* Footer */
-
-footer { padding-left: 50px; } }
+@media (max-width: 667px) { footer { padding-left: 20px; } }
+@media (min-width: 1667px) { footer { padding-left: 50px; } }
 
 .footer-frame {
 	display: grid;
@@ -3063,7 +3019,10 @@ footer { padding-left: 50px; } }
 	}
 }
 
-@-moz-document url-prefix() {
+/* cssgen: the @-moz-document url-prefix() block is the theme's own
+   no-text-box rendering (Firefox never shipped text-box). The compat
+   build drops text-box everywhere, so these apply unconditionally;
+   the .lcars-text-bar rules are replaced by the centering below. */
 
 	main {
 		padding-top: 4vw;
@@ -3085,14 +3044,6 @@ footer { padding-left: 50px; } }
    	margin-top: .75rem;
    }
 
-   .lcars-text-bar h2,
-   .lcars-text-bar h3,
-   .lcars-text-bar h4,
-   .lcars-text-bar span {
-      position: absolute;
-      top: -.7vh;
-   }
-
    .lcars-list li::before {
 		top: .85rem;
 	}
@@ -3101,7 +3052,7 @@ footer { padding-left: 50px; } }
    	height: 1.3rem;
    	line-height: 1rem;
    }
-}
+
 /* cssgen: text-box dropped for compat. The heading (black title box) is taller
    than the bar, so it must be centered on it. Flex-centering an overflowing item
    is inconsistent across engines (Firefox drifts it low), so center via
