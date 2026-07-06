@@ -79,6 +79,81 @@
   white-space: nowrap;
 }
 
+/* ── Readout ───────────────────────────────────────────────── */
+/* One instrument line: left cap · label · the state as large text on the black
+   cutout (the text-bar treatment) · colour-coded chip · pill end cap with the
+   unit. Readouts live in a .readout-stack, which owns the section widths
+   (--ro-label-w / --ro-value-w / --ro-unit-w) and the shell colour
+   (--ro-color, default gold) so every row lines up. The value text and chip
+   carry the coded colour inline. Black notches separate the pieces. */
+.readout-stack {
+  --ro-label-w: 7rem;
+  --ro-value-w: 3rem;
+  --ro-unit-w: 2.75rem;
+  display: flex;
+  flex-direction: column;
+}
+.readout {
+  display: flex;
+  align-items: center;
+  height: 1.3rem;
+  margin-top: 0.4rem; margin-bottom: 0.4rem;
+}
+.ro-cap {
+  flex: none;
+  width: 0.8rem;
+  height: 100%;
+  margin-right: 3px; /* notch */
+  border-radius: 100vmax 0 0 100vmax;
+  background: var(--ro-color, var(--gold));
+}
+.ro-label,
+.ro-unit {
+  flex: none;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding-left: 0.5rem; padding-right: 0.5rem;
+  background: var(--ro-color, var(--gold));
+  color: black;
+  font-weight: bold;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.ro-label {
+  width: var(--ro-label-w, 7rem);
+  justify-content: flex-end; /* LCARS: text hugs the readout it names */
+}
+.ro-value {
+  flex: none;
+  box-sizing: border-box;
+  width: var(--ro-value-w, 3rem);
+  padding-left: 0.35rem; padding-right: 0.35rem;
+  padding-bottom: 0.07em; /* optical centre: glyphs sit low in the line box */
+  font-size: 1.55rem;
+  line-height: 1;
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: var(--ro-color, var(--gold));
+  white-space: nowrap;
+}
+.ro-chip {
+  flex: none;
+  width: 0.5rem;
+  height: 100%;
+  margin-right: 3px; /* notch before the end cap */
+  background: var(--ro-color, var(--gold));
+}
+.ro-unit {
+  width: var(--ro-unit-w, 2.75rem);
+  justify-content: center;
+  border-radius: 0 100vmax 100vmax 0;
+}
+
 /* ── Bezels (LCARS elbow frames) ───────────────────────────── */
 .bezel {
   box-sizing: border-box;
@@ -90,8 +165,10 @@
   height: 100%;
   background: #000;
 }
-.top-bezel    { padding-top: 15px; margin-bottom: 5px; }
-.bottom-bezel { padding-bottom: 15px; margin-top: 5px; }
+/* Inter-piece gap matches the left-column button separation (--panel-border,
+   .25rem), so stacked bezel pieces read as segments like the sidebar. */
+.top-bezel    { padding-top: 15px; margin-bottom: 0.25rem; }
+.bottom-bezel { padding-bottom: 15px; margin-top: 0.25rem; }
 
 .bezel--left  { padding-left: 60px; }
 .bezel--right { padding-right: 60px; }
@@ -160,4 +237,145 @@
    of beside it. */
 @media (max-width: 1300px) {
   .demo { grid-template-columns: 1fr; }
+}
+
+/* ── Dashboard pages (dash.html) ───────────────────────────── */
+/* Left-column primary nav: the theme's sidebar-button pattern on the panels.
+   The current page's panel is lit. */
+.left-frame a { display: block; text-decoration: none; color: black; }
+.left-frame a:hover { filter: brightness(115%); }
+.left-frame a.here { background-color: var(--space-white, #f5f6fa); }
+
+/* Functional button array under the banner. The theme sizes nav buttons; our
+   toggles keep their state colours (gold = on). Slots are the swap targets. */
+.ctl-nav { width: auto; justify-content: flex-end; }
+.toggle-slot { display: inline-block; }
+
+/* Columns of sections, sized for a 1080p display. Read-only readout groups are
+   bar-headed; control clusters (switches) are boxed in a full bezel. */
+.dash-cols { align-items: flex-start; }
+.dash-sec { margin-bottom: 1.1rem; }
+.dash-sec .lcars-text-bar { margin-top: 0.75rem; margin-bottom: 0.75rem; }
+
+/* The theme's end-notches are sized in vh (6vh) independent of the bar, so they
+   overhang below the bar once its height clamps at 41px on tall displays. Tie
+   them to the bar height instead (it always sets an explicit height, so % here
+   resolves). Vendored classic.css stays byte-identical. */
+.lcars-text-bar::before,
+.lcars-text-bar::after { height: 100%; }
+
+/* Control-cluster bezel: a segmented top+middle*+bottom elbow frame. The top
+   piece holds the h1 header; each middle and the bottom piece holds a content
+   group's pillbox. Each piece's black content needs enough height for the elbow
+   curve to render (the outer 45px radius clamps flat on a short block), so the
+   bottom keeps a min-height floor for short groups. */
+.bezel-box .top-bezel > .bezel-content { min-height: 2rem; padding: 0.25rem 1rem 0.35rem; }
+.bezel-box .middle > .bezel-content,
+.bezel-box .bottom-bezel > .bezel-content { min-height: 1.4rem; padding: 0.2rem 1rem 0.4rem; }
+.bezel-box .pillbox { margin: 0; }
+.bezel-box h1 {
+  margin: 0;
+  font-size: 1.4rem;
+  text-align: left;
+  line-height: 1.1;
+  color: var(--bezel-color, var(--gold));
+}
+
+/* Live cells: the theme's .pill end-justifies its content, running the label
+   and value together; spread them label-left value-right, and tighten the
+   grid so full arrays (all lights) fit the viewport. */
+.dash-live .pill {
+  height: 38px;
+  justify-content: space-between;
+  padding-left: 0.75rem;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.dash-live .pill .hop { margin-left: 0.5em; }
+.dash-live .pillbox { grid-gap: 5px; margin: 0.5rem auto; }
+.dash-live .pillbox.pb-1 { grid-template-columns: 1fr; }
+.dash-live .pillbox.pb-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+/* Pill toggles (actionable lights/locks): a pill that posts on click. On =
+   gold, off = dim grey — the control both acts and reads back its state. The
+   slot is a grid cell so it lines up with read-only pills in the same box. */
+.dash-live .toggle-slot { display: block; }
+.dash-live .pill-toggle {
+  width: 100%;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: black;
+}
+.dash-live .pillbox .pill-toggle.pill-on { background-color: var(--gold); }
+.dash-live .pillbox .pill-toggle.pill-off { background-color: var(--panel-3-color, #667); opacity: 0.7; }
+.dash-live .pill-toggle:hover { filter: brightness(112%); }
+.dash-live .pill-toggle:active { filter: brightness(85%); }
+
+/* The theme colours only pills 1-6; long arrays (all lights) cycle the same
+   palette so every pill is visible. But toggles carry their own on/off colour,
+   so exclude them from the positional palette. */
+.dash-live .pill:nth-child(6n+1) { background-color: var(--pill-1-color); border-radius: 100vmax 0 0 100vmax; }
+.dash-live .pill:nth-child(6n+2) { background-color: var(--pill-2-color); }
+.dash-live .pill:nth-child(6n+3) { background-color: var(--pill-3-color); border-radius: 100vmax 0 0 100vmax; }
+.dash-live .pill:nth-child(6n+4) { background-color: var(--pill-4-color); }
+.dash-live .pill:nth-child(6n+5) { background-color: var(--pill-5-color); border-radius: 100vmax 0 0 100vmax; }
+.dash-live .pill:nth-child(6n+6) { background-color: var(--pill-6-color); }
+.dash-live .bar-chart { font-size: 0.75rem; }
+
+/* Segmented meters: a row of labelled level-meters. */
+.meter-row { display: flex; justify-content: space-around; margin-top: 0.5rem; }
+.meter-block { display: flex; flex-direction: column; align-items: center; width: 4rem; }
+.meter-block .level-meter { width: 36px; height: 150px; }
+.meter-value { margin-top: 0.35rem; font-weight: bold; color: var(--space-white, #f5f6fa); font-variant-numeric: tabular-nums; }
+.meter-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.8; color: var(--space-white, #f5f6fa); text-align: center; }
+
+/* Live data cascade: sized by its content (not the theme's fixed 9-row
+   header height), reading left-to-right. */
+.dash-cascade {
+  height: auto;
+  justify-content: flex-start;
+  padding: 0.5rem 0 0.25rem;
+}
+/* sibling margins, not flex gap: the flex display lives on the theme's
+   wrapper rule, so the gap pass can't see this is a flex container */
+.dash-cascade .data-column { text-align: left; }
+.dash-cascade .data-column + .data-column { margin-left: 1.25rem; }
+
+/* ── Kiosk sizing ──────────────────────────────────────────── */
+/* Dashboards fill exactly one screen (no scroll) on a monitor; the theme's
+   decorative panel heights are made compact and the content row flexes to
+   the remaining height. Narrow screens keep the theme's normal scrolling. */
+@media (min-width: 1500px) {
+  .dash-frame {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 10px); /* body's theme padding-top */
+    overflow: hidden;
+  }
+  /* As flex items of the kiosk column, the wraps' margin-left: auto; margin-right: would
+; force full width. */
+  .dash-frame > .wrap { flex: none; width: 100%; }
+  .dash-frame > #gap { flex: 1 1 auto; min-height: 0; width: 100%; }
+
+  /* Left column: uniform nav buttons, short fillers; space-between in the
+     theme keeps panel-10 pinned to the bottom. (px, not rem: the theme's
+     root font-size makes rem 22px here.) */
+  .dash-frame .left-frame a { height: 80px; max-height: none; }
+  /* Unused fillers carry a single &nbsp; line; let its rem-based line box +
+     padding set the height rather than a cramped fixed pixel value. */
+  .dash-frame .panel-7, .dash-frame .panel-8, .dash-frame .panel-9 {
+    height: auto; min-height: 0; max-height: none;
+  }
+  .dash-frame .panel-10 { height: 60px; min-height: 0; max-height: none; }
+
+  /* Right column: main takes the leftover height; slight excess clips
+     instead of scrolling the kiosk. */
+  .dash-frame .right-frame { display: flex; flex-direction: column; min-height: 0; }
+  .dash-frame .right-frame main { flex: 1 1 auto; min-height: 0; overflow: hidden; padding-top: 0.75rem; }
+  .dash-frame .right-frame footer { flex: none; margin-top: 0.5rem; margin-bottom: 0.5rem; }
+  .dash-frame main > .lcars-text-bar { margin-top: 0.75rem; margin-bottom: 1rem; }
 }

@@ -39,6 +39,25 @@ view.RenderGauge(spec, rawState, known)`}}</pre>
 view.RenderBar(spec, rawState, known)`}}</pre>
   </div>
 
+  {{template "lcars-bar" "ReadoutStack"}}
+  <p>A vertical stack of instrument lines. Each row: a capped LCARS bar carrying
+     the entity label, the state as large text on the black cutout (the text-bar
+     treatment), a colour-coded chip, and a pill end cap with the unit. The value
+     text and chip share the coded colour (nearest stop), so a hot reading reads
+     red. The stack owns the section widths —
+     <span class="code">--ro-label-w / --ro-value-w / --ro-unit-w</span> — and the
+     shell colour <span class="code">--ro-color</span>, so every row lines up.
+     Build rows with <span class="code">view.RenderReadout</span>.</p>
+  <div class="demo">
+    <div class="demo-render">{{template "readout-stack" .Readouts}}</div>
+    <pre class="demo-code">{{`{{template "readout-stack" .Readouts}}
+
+[]view.Readout{Label, Value, Unit, Frac, Color, OK}
+view.RenderReadout(spec, rawState, known)
+// spec: {Label, Min, Max, Unit, Decimals, Stops}
+// widths/colour: style="--ro-label-w:7rem;--ro-color:var(--ice)"`}}</pre>
+  </div>
+
   {{template "lcars-bar" "LevelMeter"}}
   <p>A single value as a segmented vertical gauge (VU-meter style): pill segments
      light from the bottom up, each showing its slice of a gradient so the colour
@@ -87,10 +106,10 @@ view.RenderMeter("m1", 72, 55, 85, 16, 3,
   {{template "lcars-bar" "Toggle control (hx-post)"}}
   <p>An actionable button. It POSTs to its action endpoint; the server calls the
      Home Assistant service, then returns the updated button which htmx swaps in.
-     Works as a plain form with no JS. This live one toggles
-     <span class="code">switch.kitchen_spare</span> for real.</p>
+     Works as a plain form with no JS. This live one toggles the first defined
+     control for real.</p>
   <div class="demo">
-    <div class="demo-render">{{template "toggle" .Toggle}}</div>
+    <div class="demo-render">{{if .Toggle.ID}}{{template "toggle" .Toggle}}{{else}}<em>(define a control in pages_local.go to demo a live toggle)</em>{{end}}</div>
     <pre class="demo-code">{{`{{template "toggle" .Toggle}}
 
 // serverToggle{ID, Label, State, On}; POST /action/{ID}`}}</pre>

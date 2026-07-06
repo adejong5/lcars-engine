@@ -40,7 +40,9 @@ func (s *Server) Handler() http.Handler {
 func (s *Server) routes() {
 	s.mux.Handle("GET /static/", render.Static())
 	s.mux.HandleFunc("GET /{$}", s.handleIndex) // component demo
-	s.mux.HandleFunc("GET /ops", s.handleOps)   // dashboard
+	for _, p := range pages {                   // the dashboard pages
+		s.mux.HandleFunc("GET /"+p.Slug, s.handleDash)
+	}
 	s.mux.HandleFunc("GET /sse", s.handleSSE)
 	s.mux.HandleFunc("GET /cells/{id}", s.handleCell)
 	s.mux.HandleFunc("POST /action/{id}", s.handleAction)
@@ -152,3 +154,8 @@ func (r *statusRecorder) WriteHeader(code int) {
 	r.status = code
 	r.ResponseWriter.WriteHeader(code)
 }
+
+// Unwrap exposes the underlying ResponseWriter so http.ResponseController can
+// reach its Flusher and deadline setters — required for the SSE stream to
+// flush and to clear the server's WriteTimeout on the long-lived connection.
+func (r *statusRecorder) Unwrap() http.ResponseWriter { return r.ResponseWriter }

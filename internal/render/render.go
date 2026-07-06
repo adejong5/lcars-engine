@@ -22,9 +22,11 @@ var staticFS embed.FS
 // funcs are template helpers. The template.CSS-returning ones let pages set
 // dynamic inline styles (widths, colours) without html/template refusing them.
 var funcs = template.FuncMap{
-	"widthpct":  func(f float64) template.CSS { return template.CSS(fmt.Sprintf("width:%.2f%%", f*100)) },
-	"clipinset": func(f float64) template.CSS { return template.CSS(fmt.Sprintf("clip-path:inset(0 %.2f%% 0 0)", (1-f)*100)) },
-	"css":       func(s string) template.CSS { return template.CSS(s) },
+	"widthpct": func(f float64) template.CSS { return template.CSS(fmt.Sprintf("width:%.2f%%", f*100)) },
+	"clipinset": func(f float64) template.CSS {
+		return template.CSS(fmt.Sprintf("clip-path:inset(0 %.2f%% 0 0)", (1-f)*100))
+	},
+	"css": func(s string) template.CSS { return template.CSS(s) },
 }
 
 // Renderer holds one parsed template set per page (each = frame + components +
@@ -77,13 +79,15 @@ func (r *Renderer) Fragment(w http.ResponseWriter, name string, data any) error 
 	return r.base.ExecuteTemplate(w, name, data)
 }
 
-// CellHTML renders one live cell's inner fragment to a string (for SSE).
-func (r *Renderer) CellHTML(data any) (string, error) {
+// FragmentHTML renders a named fragment to a single-line string for SSE event
+// data (the SSE wire format is line-oriented, so embedded newlines are
+// flattened to spaces — harmless in HTML).
+func (r *Renderer) FragmentHTML(name string, data any) (string, error) {
 	var b strings.Builder
-	if err := r.base.ExecuteTemplate(&b, "cell", data); err != nil {
+	if err := r.base.ExecuteTemplate(&b, name, data); err != nil {
 		return "", err
 	}
-	return b.String(), nil
+	return strings.Join(strings.Fields(b.String()), " "), nil
 }
 
 // Static serves the embedded theme assets under /static/.

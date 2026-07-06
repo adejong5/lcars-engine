@@ -15,15 +15,20 @@
   <script src="static/htmx-ext-sse.js" defer></script>
 </head>
 <body>
-  <section id="column-3" class="wrap-standard">
+  <section id="column-3" class="wrap-standard{{if .Live}} dash-frame{{end}}"{{if .Live}} hx-ext="sse" sse-connect="sse"{{end}}>
     <div class="wrap">
       <div class="left-frame-top">
         <button class="panel-1-button">LCARS</button>
-        <div class="panel-2">01<span class="hop">-HIGHBROOK</span></div>
+        <div class="panel-2">01<span class="hop">-{{.Site}}</span></div>
       </div>
       <div class="right-frame-top">
         <div class="banner">{{.Banner}}</div>
-        <div class="data-cascade-button-group"></div>
+        {{/* The page's functional buttons (live toggles) sit under the banner. */}}
+        <div class="data-cascade-button-group">
+          {{if .Controls}}<nav class="ctl-nav">
+            {{range .Controls}}<span class="toggle-slot" id="ctl-{{.ID}}" sse-swap="ctl-{{.ID}}">{{template "toggle" .}}</span>{{end}}
+          </nav>{{end}}
+        </div>
         <div class="bar-panel first-bar-panel">
           <div class="bar-1"></div><div class="bar-2"></div><div class="bar-3"></div><div class="bar-4"></div><div class="bar-5"></div>
         </div>
@@ -31,10 +36,9 @@
     </div>
     <div class="wrap" id="gap">
       <div class="left-frame">
-        <div><div class="panel-3">03<span class="hop">-OPS</span></div>
-          <div class="panel-4">04</div><div class="panel-5">05</div>
-          <div class="panel-6">06</div><div class="panel-7">07</div>
-          <div class="panel-8">08</div><div class="panel-9">09</div></div>
+        {{/* Primary navigation: one sidebar panel per page (03-06); 07-09 are
+             inert fillers keeping the classic column. */}}
+        <div>{{range .Panels}}{{if .Href}}<a class="panel-{{.N}}{{if .Here}} here{{end}}" href="{{.Href}}">{{printf "%02d" .N}}<span class="hop">{{slice .Code 2}}</span></a>{{else}}<div class="panel-{{.N}}">&nbsp;</div>{{end}}{{end}}</div>
         <div><div class="panel-10">10</div></div>
       </div>
       <div class="right-frame">

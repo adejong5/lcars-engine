@@ -1,0 +1,82 @@
+{{/* dash: the generic dashboard page. Data: dashData {frameData, Cols}.
+     Every page (ops, thermal, subnet, engr) renders through this template.
+
+     Two section shapes (ENGINE §2):
+       - Read-only readout groups are bar-headed (the normal page rhythm).
+       - Control clusters (sections carrying switches) are boxed in a full
+         top+middle+bottom bezel, titled with an <h1> in the top piece.
+
+     Every live element is an SSE swap target (event = element id) with an
+     infrequent hx-get fallback poll; the SSE connection is opened by the
+     frame. Sized to fill a 1080p display. */}}
+{{define "content"}}
+  <div class="lcars-text-bar"><h3>{{.Title}}</h3></div>
+
+  <div class="dash-live flexbox dash-cols">
+    {{range .Cols}}
+      <div class="col">
+        {{range .}}
+          {{if .BotGroup}}
+            {{/* control cluster → boxed bezel: header (top) → content group per
+                 middle piece → last content group in the bottom (base) piece. */}}
+            {{$s := .}}
+            <div class="dash-sec bezel-box"{{if .Color}} style="{{css (printf "--bezel-color:%s" .Color)}}"{{end}}>
+              <div class="bezel top-bezel bezel--left"><div class="bezel-content"><h1>{{.Heading}}</h1></div></div>
+              {{range .MidGroups}}
+                <div class="bezel bezel--left middle"><div class="bezel-content">
+                  <div class="pillbox{{if $s.PillCols}} pb-{{$s.PillCols}}{{end}}">
+                    {{range .}}<span class="toggle-slot" id="pill-{{.ID}}" sse-swap="pill-{{.ID}}">{{template "pill-toggle" .}}</span>{{end}}
+                  </div>
+                </div></div>
+              {{end}}
+              <div class="bezel bottom-bezel bezel--left"><div class="bezel-content">
+                <div class="pillbox{{if $s.PillCols}} pb-{{$s.PillCols}}{{end}}">
+                  {{range .BotGroup}}<span class="toggle-slot" id="pill-{{.ID}}" sse-swap="pill-{{.ID}}">{{template "pill-toggle" .}}</span>{{end}}
+                </div>
+              </div></div>
+            </div>
+          {{else}}
+            {{/* read-only readout → bar heading, no frame */}}
+            <div class="dash-sec">
+              {{if .Heading}}<div class="lcars-text-bar the-end"><h4>{{.Heading}}</h4></div>{{end}}
+
+              {{if eq .Kind "cells"}}
+                <div class="pillbox{{if .PillCols}} pb-{{.PillCols}}{{end}}">
+                  {{range .Elems}}<div class="pill" id="{{.ID}}" sse-swap="{{.ID}}"
+                       hx-get="cells/{{.ID}}" hx-trigger="every 60s">{{template "cell" .Tile}}</div>{{end}}
+                </div>
+              {{end}}
+
+              {{if eq .Kind "bars"}}
+                <div class="bar-chart">
+                  {{range .Elems}}<div class="bar-row" id="{{.ID}}" sse-swap="{{.ID}}"
+                       hx-get="cells/{{.ID}}" hx-trigger="every 60s">{{template "bar-row" .Bar}}</div>{{end}}
+                </div>
+              {{end}}
+
+              {{if eq .Kind "readouts"}}
+                {{/* live variant of readout-stack: each row is an SSE swap target */}}
+                <div class="readout-stack"{{if .Color}} style="{{css (printf "--ro-color:%s" .Color)}}"{{end}}>
+                  {{range .Elems}}<div class="readout" id="{{.ID}}" sse-swap="{{.ID}}"
+                       hx-get="cells/{{.ID}}" hx-trigger="every 60s">{{template "readout" .Readout}}</div>{{end}}
+                </div>
+              {{end}}
+
+              {{if eq .Kind "meters"}}
+                <div class="meter-row">
+                  {{range .Elems}}<div class="meter-block" id="{{.ID}}" sse-swap="{{.ID}}"
+                       hx-get="cells/{{.ID}}" hx-trigger="every 60s">{{template "meter-block" .Meter}}</div>{{end}}
+                </div>
+              {{end}}
+
+              {{if eq .Kind "cascade"}}
+                <div class="data-cascade-wrapper dash-cascade" id="{{.ID}}" sse-swap="{{.ID}}"
+                     hx-get="cells/{{.ID}}" hx-trigger="every 60s">{{template "cascade-cols" .Cascade}}</div>
+              {{end}}
+            </div>
+          {{end}}
+        {{end}}
+      </div>
+    {{end}}
+  </div>
+{{end}}

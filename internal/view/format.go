@@ -57,6 +57,23 @@ func Fixed(n int) Formatter {
 	}
 }
 
+// Map returns a Formatter that substitutes known raw states with display text
+// (e.g. binary_sensor on/off -> OPEN/CLOSED); unknown values pass through.
+func Map(subs map[string]string) Formatter {
+	return func(raw string) string {
+		if v, ok := subs[strings.TrimSpace(raw)]; ok {
+			return v
+		}
+		return raw
+	}
+}
+
+// Map2 returns a Classifier that maps a raw state to a CSS class (e.g. an
+// "on" door -> AlertClass); unmatched states get no class.
+func Map2(subs map[string]string) Classifier {
+	return func(raw string) string { return subs[strings.TrimSpace(raw)] }
+}
+
 // Hot returns a Classifier that flags AlertClass when the value is >= limit.
 func Hot(limit float64) Classifier {
 	return func(raw string) string {

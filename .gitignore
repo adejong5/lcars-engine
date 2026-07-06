@@ -1,5 +1,11 @@
 # Local config & secrets (HA host/token) — never commit
 /.env
+/.env.local
+
+# Site-local dashboard definitions (entity ids, room names, page layouts) and
+# their tests — personal to the household, never commit
+/internal/server/pages_local.go
+/internal/server/pages_local_test.go
 
 # Build output
 /lcars

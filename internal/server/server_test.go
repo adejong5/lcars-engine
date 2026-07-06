@@ -1,12 +1,15 @@
 package server
 
 import (
+	"bufio"
+	"context"
 	"io"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/adejong5/lcars-engine/internal/config"
 	"github.com/adejong5/lcars-engine/internal/ha"
@@ -55,21 +58,6 @@ func TestCallServiceValidation(t *testing.T) {
 	}
 }
 
-func TestOpsPageRenders(t *testing.T) {
-	h := newTestServer()
-	rr := httptest.NewRecorder()
-	h.ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/ops", nil))
-	if rr.Code != http.StatusOK {
-		t.Fatalf("GET /ops status %d", rr.Code)
-	}
-	body := rr.Body.String()
-	for _, s := range []string{`class="banner"`, "lcars-text-bar", "TheLCARS.com", `href="static/classic.compat.css"`} {
-		if !strings.Contains(body, s) {
-			t.Fatalf("ops page missing %q", s)
-		}
-	}
-}
-
 func TestIndexDemoRenders(t *testing.T) {
 	h := newTestServer()
 	rr := httptest.NewRecorder()
@@ -78,7 +66,7 @@ func TestIndexDemoRenders(t *testing.T) {
 		t.Fatalf("GET / status %d", rr.Code)
 	}
 	body := rr.Body.String()
-	for _, s := range []string{`<base href="/">`, `class="pill-gauge"`, `class="bar-chart"`, "components.compat.css"} {
+	for _, s := range []string{`<base href="/">`, `class="pill-gauge"`, `class="bar-chart"`, `class="readout"`, `href="static/classic.compat.css"`, "components.compat.css"} {
 		if !strings.Contains(body, s) {
 			t.Fatalf("demo page missing %q", s)
 		}
@@ -96,41 +84,34 @@ func TestIngressBase(t *testing.T) {
 	}
 }
 
-func TestActionToggle(t *testing.T) {
-	h := newTestServer()
-	rr := httptest.NewRecorder()
-	h.ServeHTTP(rr, httptest.NewRequest(http.MethodPost, "/action/kitchen_spare", nil))
-	if rr.Code != http.StatusOK {
-		t.Fatalf("POST /action/kitchen_spare status %d", rr.Code)
+// TestSSEStreamsThroughMiddleware guards against the logging middleware's
+// ResponseWriter wrapper breaking http.ResponseController: without Unwrap, the
+// stream never flushes and the client hangs with 0 bytes received. Uses a real
+// server so the flush actually crosses a socket.
+func TestSSEStreams(t *testing.T) {
+	ts := httptest.NewServer(newTestServer())
+	defer ts.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, ts.URL+"/sse", nil)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatalf("GET /sse: %v", err)
 	}
-	body := rr.Body.String()
-	if !strings.Contains(body, "Kitchen Spare") || !strings.Contains(body, "hx-post=") {
-		t.Fatalf("action did not return the toggle fragment: %s", body)
+	defer resp.Body.Close()
+	if ct := resp.Header.Get("Content-Type"); !strings.HasPrefix(ct, "text/event-stream") {
+		t.Fatalf("SSE Content-Type = %q", ct)
 	}
 
-	rr = httptest.NewRecorder()
-	h.ServeHTTP(rr, httptest.NewRequest(http.MethodPost, "/action/nope", nil))
-	if rr.Code != http.StatusNotFound {
-		t.Fatalf("unknown action status %d, want 404", rr.Code)
+	// The handler writes ": connected" and flushes immediately; if flushing were
+	// broken this read would block until the context deadline instead.
+	line, err := bufio.NewReader(resp.Body).ReadString('\n')
+	if err != nil {
+		t.Fatalf("reading first SSE flush: %v", err)
 	}
-}
-
-func TestCellFragment(t *testing.T) {
-	h := newTestServer()
-
-	rr := httptest.NewRecorder()
-	h.ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/cells/switch.kitchen_spare", nil))
-	if rr.Code != http.StatusOK {
-		t.Fatalf("GET /cells/{id} status %d", rr.Code)
-	}
-	if !strings.Contains(rr.Body.String(), "Kitchen Spare") {
-		t.Fatalf("cell fragment missing label: %s", rr.Body.String())
-	}
-
-	rr = httptest.NewRecorder()
-	h.ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/cells/sensor.not_a_cell", nil))
-	if rr.Code != http.StatusNotFound {
-		t.Fatalf("unknown cell status %d, want 404", rr.Code)
+	if !strings.Contains(line, "connected") {
+		t.Fatalf("first SSE line = %q, want the connected comment", line)
 	}
 }
 

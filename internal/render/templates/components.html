@@ -16,14 +16,28 @@
   <span class="text">{{.Display}}</span>
 </div>{{end}}
 
+{{/* bar-row: one bar's inner fragment (label + track + value). Data: view.Bar.
+     Also used as SSE event data, swapped into its .bar-row wrapper. */}}
+{{define "bar-row"}}<span class="bar-label">{{.Label}}</span><div class="bar-track"><div class="bar-fill" style="{{widthpct .Frac}};background:{{css .Color}}"></div></div><span class="bar-value">{{.Display}}</span>{{end}}
+
+{{/* readout: one instrument line's inner fragment — left cap, label, the state
+     as large text on the black cutout (text-bar style), a colour-coded chip,
+     and a pill end cap with the unit. Data: view.Readout. Single line — also
+     used as SSE event data, swapped into its .readout wrapper. */}}
+{{define "readout"}}<span class="ro-cap"></span><span class="ro-label">{{.Label}}</span><span class="ro-value"{{if .Color}} style="{{css (printf "color:%s" .Color)}}"{{end}}>{{.Value}}</span><span class="ro-chip"{{if .Color}} style="{{css (printf "background:%s" .Color)}}"{{end}}></span><span class="ro-unit">{{.Unit}}</span>{{end}}
+
+{{/* readout-stack: a vertical stack of readouts sharing section widths. The
+     stack owns the layout: per-section widths come from --ro-label-w /
+     --ro-value-w / --ro-unit-w (and the shell colour from --ro-color), set on
+     the stack so every row lines up. Data: []view.Readout. */}}
+{{define "readout-stack"}}<div class="readout-stack">
+  {{range .}}<div class="readout">{{template "readout" .}}</div>{{end}}
+</div>{{end}}
+
 {{/* bar-chart: a set of horizontal bars. Data: []view.Bar {Label, Display,
      Frac, Color}. */}}
 {{define "bar-chart"}}<div class="bar-chart">
-  {{range .}}<div class="bar-row">
-    <span class="bar-label">{{.Label}}</span>
-    <div class="bar-track"><div class="bar-fill" style="{{widthpct .Frac}};background:{{css .Color}}"></div></div>
-    <span class="bar-value">{{.Display}}</span>
-  </div>{{end}}
+  {{range .}}<div class="bar-row">{{template "bar-row" .}}</div>{{end}}
 </div>{{end}}
 
 {{/* toggle: a control button that posts to its action endpoint and is replaced
@@ -32,21 +46,35 @@
   <button type="submit" class="lcars-button {{if .On}}button-gold{{else}}button-gray{{end}}">{{.Label}} &middot; {{.State}}</button>
 </form>{{end}}
 
+{{/* pill-toggle: the same control as a pillbox pill — an actionable entity
+     (light, lock) shown label-left / state-right, gold when on, dim when off.
+     Posts with ?s=pill so the action handler returns this variant. Data:
+     serverToggle. */}}
+{{define "pill-toggle"}}<button type="submit" class="pill pill-toggle {{if .On}}pill-on{{else}}pill-off{{end}}"
+    hx-post="action/{{.ID}}?s=pill" hx-swap="outerHTML">{{.Label}}<span class="hop">{{.State}}</span></button>{{end}}
+
 {{/* level-meter: segmented vertical gauge (inline SVG, geometry precomputed).
-     Data: view.Meter. */}}
+     Lit segments use solid per-segment colours: a gradient's url(#id) breaks
+     under <base href> on any non-base page. Data: view.Meter. */}}
 {{define "level-meter"}}<svg class="level-meter" viewBox="0 0 {{.VW}} {{.VH}}" preserveAspectRatio="none" role="meter">
-  <defs><linearGradient id="{{.GID}}" x1="0" y1="{{.VH}}" x2="0" y2="0" gradientUnits="userSpaceOnUse">
-    {{range .Stops}}<stop offset="{{.Offset}}%" style="{{css (printf "stop-color:%s" .Color)}}"/>{{end}}
-  </linearGradient></defs>
-  {{$g := .GID}}{{$w := .RectW}}{{range .Segs}}<rect x="2" y="{{.Y}}" width="{{$w}}" height="{{.H}}" rx="{{.R}}" ry="{{.R}}" fill="{{if .Lit}}url(#{{$g}}){{else}}rgba(255,255,255,0.06){{end}}"/>{{end}}
+  {{$w := .RectW}}{{range .Segs}}<rect x="2" y="{{.Y}}" width="{{$w}}" height="{{.H}}" rx="{{.R}}" ry="{{.R}}" {{if .Lit}}style="{{css (printf "fill:%s" .Color)}}"{{else}}fill="rgba(255,255,255,0.06)"{{end}}/>{{end}}
 </svg>{{end}}
+
+{{/* meter-block: a labelled segmented gauge's inner fragment (level-meter +
+     value + label). Data: view.MeterBlock. Also used as SSE event data,
+     swapped into its .meter-block wrapper. */}}
+{{define "meter-block"}}{{template "level-meter" .Meter}}<span class="meter-value">{{.Display}}</span><span class="meter-label">{{.Label}}</span>{{end}}
+
+{{/* cascade-cols: the columns of a data cascade (no wrapper — the caller owns
+     it, so live cascades can swap just the body). Data: [][]cascadeCell. */}}
+{{define "cascade-cols"}}{{range .}}<div class="data-column">
+    {{range .}}<div class="dc-row-{{.Row}}{{if .Cls}} {{.Cls}}{{end}}">{{.Text}}</div>{{end}}
+  </div>{{end}}{{end}}
 
 {{/* data-cascade: the animated number grid. Data: [][]cascadeCell{Row, Text};
      the theme's dc-row-N classes drive the colour cycling. */}}
 {{define "data-cascade"}}<div class="data-cascade-wrapper" id="default">
-  {{range .}}<div class="data-column">
-    {{range .}}<div class="dc-row-{{.Row}}">{{.Text}}</div>{{end}}
-  </div>{{end}}
+  {{template "cascade-cols" .}}
 </div>{{end}}
 
 {{/* accordion: collapsible section via native <details> (no JS; degrades to
