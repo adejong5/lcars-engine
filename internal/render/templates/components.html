@@ -1,8 +1,10 @@
 {{/* Shared LCARS component library. Each block takes a view model and emits
      the markup + classes the theme/components CSS expects. */}}
 
-{{/* lcars-bar: a titled section divider. Data: a string title. */}}
-{{define "lcars-bar"}}<div class="lcars-text-bar"><h3>{{.}}</h3></div>{{end}}
+{{/* lcars-bar: a titled section divider — left cap, text box, bar, end cap
+     (div-built; --gap-lg between pieces). Data: a string title. Add class
+     "the-end" on the wrapper to move the text to the far end. */}}
+{{define "lcars-bar"}}<div class="lcars-text-bar"><div class="tb-cap"></div><h3>{{.}}</h3><div class="tb-bar"></div><div class="tb-cap tb-end"></div></div>{{end}}
 
 {{/* cell: one live readout's inner fragment (label + value). Data: view.Tile.
      Single line — also used as SSE event data. */}}

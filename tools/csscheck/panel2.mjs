@@ -1,4 +1,4 @@
-// panel-2 check: components.css precomputes min-height per breakpoint in place
+// panel-2 check: components.compat.css precomputes min-height per breakpoint in place
 // of max(outer-radius, bar-height + inner-radius). Reconstruct the original
 // max() rule, serve it in place of the table, and assert the computed
 // min-height is identical at widths straddling every breakpoint.
@@ -14,9 +14,9 @@ const maxRule = `:root                      { --elbow-outer-radius: 160px; --elb
 .left-frame-top .panel-2 {
   min-height: max(var(--elbow-outer-radius), calc(var(--bar-height) + var(--elbow-inner-radius)));
 }`;
-const orig = srcCSS('components.css').replace(table, maxRule);
+const orig = srcCSS('components.compat.css').replace(table, maxRule);
 if (!orig.includes('max(var(--elbow-outer-radius)')) {
-  console.error('panel2: could not reconstruct the max() rule — components.css table changed?');
+  console.error('panel2: could not reconstruct the max() rule — components.compat.css table changed?');
   process.exit(1);
 }
 

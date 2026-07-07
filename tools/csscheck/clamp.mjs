@@ -11,7 +11,7 @@ const cases = [
   ['h1', 'font-size', 'clamp(1.5rem, 1.25rem + 3.5vw, 4rem)'],
   ['h2', 'font-size', 'clamp(1.4rem, 1.1rem + 2.25vw, 2.3rem)'],
   ['.left-frame', 'font-size', 'clamp(.875rem, 2vw, 1rem)'],
-  ['.lcars-text-bar', 'height', 'clamp(16px, 4vh, 41px)'],
+  // .lcars-text-bar was rebuilt in rem (div construction) — no clamp heritage
   ['.lcars-bar', 'height', 'clamp(15px, 2vh, 25px)'],
   ['.header-content', 'padding-left', 'clamp(20px, 3vw, 50px)'],
   ['.first-bar-panel', 'margin-top', 'clamp(15px, 2vw, 30px)'],

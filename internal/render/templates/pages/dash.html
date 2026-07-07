@@ -10,7 +10,7 @@
      infrequent hx-get fallback poll; the SSE connection is opened by the
      frame. Sized to fill a 1080p display. */}}
 {{define "content"}}
-  <div class="lcars-text-bar"><h3>{{.Title}}</h3></div>
+  <div class="lcars-text-bar"><div class="tb-cap"></div><h3>{{.Title}}</h3><div class="tb-bar"></div><div class="tb-cap tb-end"></div></div>
 
   <div class="dash-live flexbox dash-cols">
     {{range .Cols}}
@@ -38,7 +38,7 @@
           {{else}}
             {{/* read-only readout → bar heading, no frame */}}
             <div class="dash-sec">
-              {{if .Heading}}<div class="lcars-text-bar the-end"><h4>{{.Heading}}</h4></div>{{end}}
+              {{if .Heading}}<div class="lcars-text-bar the-end"><div class="tb-cap"></div><h4>{{.Heading}}</h4><div class="tb-bar"></div><div class="tb-cap tb-end"></div></div>{{end}}
 
               {{if eq .Kind "cells"}}
                 <div class="pillbox{{if .PillCols}} pb-{{.PillCols}}{{end}}">

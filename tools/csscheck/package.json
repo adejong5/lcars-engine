@@ -2,9 +2,9 @@
   "name": "csscheck",
   "private": true,
   "type": "module",
-  "description": "Playwright verification that the cssgen compat build renders identically to the modern theme. Start the app (default http://localhost:8088/, override with CSSCHECK_URL), then: npm run check. First time: npm install && npx playwright install chromium firefox.",
+  "description": "Playwright verification of the old-browser compat CSS (both stylesheets are maintained sources; see decisions/0008). clamp.mjs probes served rules against real clamp(); panel2.mjs checks the precomputed elbow table against a live max() rule. Start the app (default http://localhost:8088/, override with CSSCHECK_URL), then: npm run check. First time: npm install && npx playwright install chromium",
   "scripts": {
-    "check": "node clamp.mjs && node flexgap.mjs && node panel2.mjs && node logical.mjs && node textbox.mjs"
+    "check": "node clamp.mjs && node panel2.mjs"
   },
   "dependencies": {
     "playwright": "^1.61.1",

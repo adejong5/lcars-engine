@@ -522,6 +522,7 @@ type accordionData struct {
 
 type indexData struct {
 	frameData
+	Palette   []string // theme colour names (--<name> vars + utility classes)
 	Gauges    []view.Gauge
 	Bars      []view.Bar
 	Readouts  []view.Readout
@@ -537,6 +538,7 @@ type indexData struct {
 func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 	data := indexData{
 		frameData: frameData{Title: "Components", Banner: "LCARS • COMPONENTS", Site: siteLabel, Base: BasePath(r), Panels: framePanels("")},
+		Palette:   palette,
 		Gauges: []view.Gauge{
 			{Label: "Cold", Display: "58.0°F", Frac: 0.10, OK: true},
 			{Label: "Comfort", Display: "71.0°F", Frac: 0.53, OK: true},
@@ -575,6 +577,16 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 		s.log.Error("render index", "err", err)
 		http.Error(w, "render error", http.StatusInternalServerError)
 	}
+}
+
+// palette is the theme's colour vocabulary: each name is a --<name> variable
+// and a font-/background-/button-/bullet- utility class family in
+// classic.compat.css. Other themes may restyle them; the names are the API.
+var palette = []string{
+	"african-violet", "almond", "almond-creme", "blue", "bluey", "butterscotch",
+	"gold", "golden-orange", "gray", "green", "ice", "lilac", "lima-bean",
+	"magenta", "mars", "moonlit-violet", "orange", "peach", "red", "sky",
+	"space-white", "sunflower", "tomato", "violet-creme",
 }
 
 // demoNav links the demo's nav-button row to the registered pages (empty when

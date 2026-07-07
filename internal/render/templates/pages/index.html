@@ -103,6 +103,58 @@ view.RenderMeter("m1", 72, 55, 85, 16, 3,
 </div>`}}</pre>
   </div>
 
+  {{template "lcars-bar" "Colours"}}
+  <p>The theme's colour vocabulary. Every name is a CSS variable
+     (<span class="code">var(--gold)</span>) and a family of utility classes —
+     <span class="code">font-*</span> (text), <span class="code">background-*</span>,
+     <span class="code">button-*</span>, and <span class="code">bullet-*</span>
+     (list markers). Use the names, not raw values: other themes may restyle
+     them.</p>
+  <div class="demo">
+    <div class="demo-render">
+      <div class="swatch-grid">
+        {{range .Palette}}<div class="swatch background-{{.}}">{{.}}</div>{{end}}
+      </div>
+      <div class="util-row">
+        {{range .Palette}}<span class="font-{{.}}">■</span>{{end}}
+      </div>
+      <ul class="lcars-list demo-bullets">
+        <li class="bullet-gold">bullet-gold list item</li>
+        <li class="bullet-mars">bullet-mars list item</li>
+        <li class="bullet-ice">bullet-ice list item</li>
+      </ul>
+      <button class="lcars-button button-african-violet">button-african-violet</button>
+      <button class="lcars-button button-butterscotch">button-butterscotch</button>
+    </div>
+    <pre class="demo-code">{{`color: var(--gold);
+<span class="font-mars">alert text</span>
+<div class="background-ice">...</div>
+<button class="lcars-button button-gold">GO</button>
+<li class="bullet-sky">item</li>`}}</pre>
+  </div>
+
+  {{template "lcars-bar" "Animations"}}
+  <p>Attention states. <span class="code">blink</span> hard-cuts (2s; also
+     <span class="code">blink-slow</span> 3.5s / <span class="code">blink-fast</span> 1s);
+     <span class="code">pulse</span> breathes by brightness (2s; also
+     <span class="code">pulse-rate-high</span> 1s /
+     <span class="code">pulse-rate-low</span> 3s). Apply to any element —
+     reserve them for states that genuinely need eyes on them.</p>
+  <div class="demo">
+    <div class="demo-render">
+      <div class="swatch-grid">
+        <div class="swatch background-mars blink-slow">blink-slow</div>
+        <div class="swatch background-mars blink">blink</div>
+        <div class="swatch background-mars blink-fast">blink-fast</div>
+        <div class="swatch background-gold pulse-rate-low">pulse-rate-low</div>
+        <div class="swatch background-gold pulse">pulse</div>
+        <div class="swatch background-gold pulse-rate-high">pulse-rate-high</div>
+      </div>
+    </div>
+    <pre class="demo-code">{{`<div class="pill background-mars blink">ALERT</div>
+<div class="pill background-gold pulse">STANDBY</div>`}}</pre>
+  </div>
+
   {{template "lcars-bar" "Toggle control (hx-post)"}}
   <p>An actionable button. It POSTs to its action endpoint; the server calls the
      Home Assistant service, then returns the updated button which htmx swaps in.

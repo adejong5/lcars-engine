@@ -1,7 +1,7 @@
 # Project License & Terms of Use
 
 ## Notice of Derivative Work & Upstream License
-This project is a heavily modified, Svelte + Vite-based extension of the LCARS Inspired Website Template originally created by Jim Robertus (www.TheLCARS.com).
+This project is a heavily modified, server-rendered (Go + html/template + htmx) extension of the LCARS Inspired Website Template originally created by Jim Robertus (www.TheLCARS.com).
 
 This project is a non-commercial fan production. *Star Trek* and all related marks, logos, and characters are solely owned by CBS Studios Inc. This fan production is not endorsed by, sponsored by, nor affiliated with CBS, Paramount Pictures, or any other *Star Trek* franchise. 
 
@@ -10,7 +10,7 @@ No commercial exhibition or distribution is permitted. No alleged independent ri
 The *Antonio* font is designed by Vernon Adams and is free to use in accordance with the SIL Open Font License, Version 1.1.
 
 > [!IMPORTANT]
-> By using, copying, or modifying this repository, you agree to be bound by the original End-User License Agreement (EULA) of the upstream template, alongside the additional attribution requirements for this Svelte/Vite extension.
+> By using, copying, or modifying this repository, you agree to be bound by the original End-User License Agreement (EULA) of the upstream template, alongside the additional attribution requirements for this extension.
 
 ## Original End User License Agreement
 The original EULA can be found on [TheLCARS.com](https://www.thelcars.com/license) and applies to this work and all derivative work. As of June 10, 2026 the full text is:
@@ -48,7 +48,7 @@ The original EULA can be found on [TheLCARS.com](https://www.thelcars.com/licens
 If you use or modify this repository, you must credit both the original creator and Andrew DeJong (@adejong5), including a statement if modifications have been made.  
 You must include visible links on your website or repository to the original site and this repository. Examples include:  
 
-  Example 1: LCARS Inspired Website Template by [TheLCARS.com](https://www.thelcars.com), adapted for Svelte/Vite by [Andrew DeJong](https://www.github.com/adejong5/lcars-engine).  
-  Example 2: Based on the LCARS Template by [TheLCARS.com](https://www.thelcars.com) and the Svelte/Vite port by [Andrew DeJong](https://www.github.com/adejong5/lcars-engine), with further modifications.  
+  Example 1: LCARS Inspired Website Template by [TheLCARS.com](https://www.thelcars.com), adapted as a server-rendered dashboard engine by [Andrew DeJong](https://www.github.com/adejong5/lcars-engine).  
+  Example 2: Based on the LCARS Template by [TheLCARS.com](https://www.thelcars.com) and the lcars-engine adaptation by [Andrew DeJong](https://www.github.com/adejong5/lcars-engine), with further modifications.  
 
 
