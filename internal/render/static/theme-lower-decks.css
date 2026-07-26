@@ -1,0 +1,73 @@
+/* LCARS theme: Lower Decks — colour mapping over the classic base.
+   Load AFTER classic.compat.css; it re-declares only colour variables (the
+   base keeps layout, typography, and the responsive ladder). Extracted from
+   the LCARS Inspired Website Template "Lower Decks" theme v24.2 by Jim
+   Robertus, www.TheLCARS.com (see LICENSE.md), 2026-07-07. Structural rule
+   differences in the upstream theme are NOT captured — this is the
+   theme-to-colour record only. */
+
+:root {
+	--butter: #fec;
+	--daybreak: #f91;
+	--harvestgold: #fa4;
+	--honey: #fc9;
+	--october-sunset: #f40;
+	--rich-pumpkin: #c50;
+	--left-frame-top-color: var(--october-sunset);
+	--left-frame-color: var(--october-sunset);
+	--corner-color-top: var(--october-sunset);
+	--corner-color-bottom: var(--october-sunset);
+	--panel-1-color: var(--orange);
+	--panel-4-color: var(--orange);
+	--panel-5-color: var(--harvestgold);
+	--panel-7-color: var(--harvestgold);
+	--panel-top-button-color: var(--honey);
+	--bar-1-color: var(--october-sunset);
+	--bar-2-color: var(--orange);
+	--bar-3-color: var(--honey);
+	--bar-4-color: var(--harvestgold);
+	--bar-5-color: var(--october-sunset);
+	--bar-6-color: var(--october-sunset);
+	--bar-7-color: var(--orange);
+	--bar-8-color: var(--honey);
+	--bar-9-color: var(--harvestgold);
+	--bar-10-color: var(--october-sunset);
+	--font-color: var(--daybreak);
+	--banner-color: var(--honey);
+	--data-cascade-color: var(--orange);
+	--light-color: white;
+	--h1-color: var(--honey);
+	--h2-color: var(--honey);
+	--h3-color: var(--honey);
+	--h4-color: var(--honey);
+	--light-color: var(--butter);
+	--link-color: var(--october-sunset);
+	--code-color: var(--october-sunset);
+	--nav-1-color: var(--honey);
+	--nav-2-color: var(--harvestgold);
+	--nav-3-color: var(--orange);
+	--nav-4-color: var(--october-sunset);
+	--button-color: var(--harvestgold);
+	--button-color-sidebar: var(--october-sunset);
+	--bar-cut-out-top-color: var(--october-sunset);
+	--bar-cut-out-bottom-color: var(--october-sunset);
+	--lcars-bar-color: var(--october-sunset);
+	--lcars-bar-start-color: var(--harvestgold);
+	--lcars-bar-end-color: var(--harvestgold);
+	--lcars-bar-text-color: var(--harvestgold);
+	--image-border-color: var(--honey);
+	--primary-color: var(--orange);
+	--secondary-color: var(--harvestgold);
+	--accent-color: var(--honey);
+
+
+	/* Engine roles → this theme's decorative names (see components.compat.css
+	   :root for the role definitions; decoratives are never overwritten).
+	   Active accent per upstream's button-color; cools read as pale creams
+	   (the palette has no cool); hot end is the palette's reddest. */
+	--active-color: var(--harvestgold);
+	--highlight-color: var(--butter);
+	--level-low: var(--butter);
+	--level-mid: var(--daybreak);
+	--level-high: var(--october-sunset);
+}

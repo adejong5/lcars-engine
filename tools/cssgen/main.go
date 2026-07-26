@@ -20,20 +20,27 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 )
 
 // checked are the maintained compat stylesheets: every rule must satisfy the
-// old-browser baseline.
+// old-browser baseline. Theme colour overlays (theme-*.css) are picked up by
+// glob.
 var checked = []string{
 	"internal/render/static/classic.compat.css",
 	"internal/render/static/components.compat.css",
 }
 
 func main() {
+	themes, err := filepath.Glob("internal/render/static/theme-*.css")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "glob:", err)
+		os.Exit(1)
+	}
 	bad := false
-	for _, src := range checked {
+	for _, src := range append(checked, themes...) {
 		raw, err := os.ReadFile(src)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "read:", err)

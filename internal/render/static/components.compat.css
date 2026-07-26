@@ -4,6 +4,18 @@
    logical properties, no flex gap (use child margins), grid-gap not gap,
    no text-box. `go run ./tools/cssgen` lints this file against that list. */
 
+/* Engine role variables. Components reference roles, never decorative
+   palette names directly; a theme re-points roles at its own decorative
+   names (decoratives themselves are immutable vocabulary). Defaults are the
+   classic assignments. */
+:root {
+  --active-color: var(--gold);        /* lit/on controls, default accents */
+  --highlight-color: var(--space-white); /* current-page marker, readout text */
+  --level-low: var(--ice);            /* gauge gradient: low → */
+  --level-mid: var(--gold);           /*                  mid → */
+  --level-high: var(--mars);          /*                  high/danger */
+}
+
 /* Component styles ported from the Svelte components whose look came from their
    own <style> (not the theme stylesheet): PillGauge, BarChart, and the Bezels.
    Loaded after classic.css. */
@@ -24,14 +36,14 @@
 .pill-gauge .fill {
   position: absolute;
   top: 0; right: 0; bottom: 0; left: 0;
-  background: linear-gradient(90deg, var(--ice), var(--gold) 65%, var(--mars));
+  background: linear-gradient(90deg, var(--level-low), var(--level-mid) 65%, var(--level-high));
   transition: clip-path 800ms;
 }
 .pill-gauge .text {
   position: relative;
   font-weight: bold;
   text-transform: uppercase;
-  color: var(--space-white, #f5f6fa);
+  color: var(--highlight-color, #f5f6fa);
   white-space: nowrap;
 }
 
@@ -57,7 +69,7 @@
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--space-white, #f5f6fa);
+  color: var(--highlight-color, #f5f6fa);
   text-align: right;
   white-space: nowrap;
   opacity: 0.85;
@@ -77,7 +89,7 @@
 .bar-value {
   line-height: 1;
   font-weight: bold;
-  color: var(--space-white, #f5f6fa);
+  color: var(--highlight-color, #f5f6fa);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -108,7 +120,7 @@
   height: 100%;
   margin-right: var(--gap-sm); /* notch */
   border-radius: 100vmax 0 0 100vmax;
-  background: var(--ro-color, var(--gold));
+  background: var(--ro-color, var(--active-color));
 }
 .ro-label,
 .ro-unit {
@@ -118,7 +130,7 @@
   align-items: center;
   height: 100%;
   padding-left: 0.5rem; padding-right: 0.5rem;
-  background: var(--ro-color, var(--gold));
+  background: var(--ro-color, var(--active-color));
   color: black;
   font-weight: bold;
   line-height: 1;
@@ -141,7 +153,7 @@
   font-weight: bold;
   font-variant-numeric: tabular-nums;
   text-align: center;
-  color: var(--ro-color, var(--gold));
+  color: var(--ro-color, var(--active-color));
   white-space: nowrap;
 }
 .ro-chip {
@@ -149,7 +161,7 @@
   width: 0.5rem;
   height: 100%;
   margin-right: var(--gap-sm); /* notch before the end cap */
-  background: var(--ro-color, var(--gold));
+  background: var(--ro-color, var(--active-color));
 }
 .ro-unit {
   width: var(--ro-unit-w, 2.75rem);
@@ -235,7 +247,7 @@
 .demo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-gap: 1rem 1.5rem; align-items: center; margin-top: 0.75rem; margin-bottom: 1.75rem; }
 .demo-render { display: flex; flex-direction: column; min-width: 0; }
 .demo-render > * + * { margin-top: 0.5rem; }
-.demo-code { margin: 0; padding: 0.75rem 1rem; background: #11131c; border-radius: 0.4rem; color: var(--space-white, #f5f6fa); font-size: 0.8rem; line-height: 1.4; overflow-x: auto; white-space: pre; }
+.demo-code { margin: 0; padding: 0.75rem 1rem; background: #11131c; border-radius: 0.4rem; color: var(--highlight-color, #f5f6fa); font-size: 0.8rem; line-height: 1.4; overflow-x: auto; white-space: pre; }
 .demo-code .k { color: var(--gold); }
 
 /* On medium and narrow screens, stack the code snippet below the demo instead
@@ -275,7 +287,7 @@
    The current page's panel is lit. */
 .left-frame a { display: block; text-decoration: none; color: black; }
 .left-frame a:hover { filter: brightness(115%); }
-.left-frame a.here { background-color: var(--space-white, #f5f6fa); }
+.left-frame a.here { background-color: var(--highlight-color, #f5f6fa); }
 
 /* Functional button array under the banner. The theme sizes nav buttons; our
    toggles keep their state colours (gold = on). Slots are the swap targets. */
@@ -302,7 +314,7 @@
   font-size: 1.4rem;
   text-align: left;
   line-height: 1.1;
-  color: var(--bezel-color, var(--gold));
+  color: var(--bezel-color, var(--active-color));
 }
 
 /* Live cells: the theme's .pill end-justifies its content, running the label
@@ -334,7 +346,7 @@
   text-transform: uppercase;
   color: black;
 }
-.dash-live .pillbox .pill-toggle.pill-on { background-color: var(--gold); }
+.dash-live .pillbox .pill-toggle.pill-on { background-color: var(--active-color); }
 .dash-live .pillbox .pill-toggle.pill-off { background-color: var(--panel-3-color, #667); opacity: 0.7; }
 .dash-live .pill-toggle:hover { filter: brightness(112%); }
 .dash-live .pill-toggle:active { filter: brightness(85%); }
@@ -354,8 +366,8 @@
 .meter-row { display: flex; justify-content: space-around; margin-top: 0.5rem; }
 .meter-block { display: flex; flex-direction: column; align-items: center; width: 4rem; }
 .meter-block .level-meter { width: 36px; height: 150px; }
-.meter-value { margin-top: 0.35rem; font-weight: bold; color: var(--space-white, #f5f6fa); font-variant-numeric: tabular-nums; }
-.meter-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.8; color: var(--space-white, #f5f6fa); text-align: center; }
+.meter-value { margin-top: 0.35rem; font-weight: bold; color: var(--highlight-color, #f5f6fa); font-variant-numeric: tabular-nums; }
+.meter-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.8; color: var(--highlight-color, #f5f6fa); text-align: center; }
 
 /* Live data cascade: sized by its content (not the theme's fixed 9-row
    header height), reading left-to-right. */

@@ -16,6 +16,7 @@ type frameData struct {
 	Title    string
 	Banner   string
 	Site     string // installation name in the 01 panel (siteLabel)
+	Theme    string // colour overlay stylesheet name ("" = classic base)
 	Base     string // ingress path prefix ("" when standalone)
 	Live     bool   // open the SSE stream (dashboard pages)
 	Panels   []panelLink
@@ -119,7 +120,7 @@ var (
 	upToDate = view.Map(map[string]string{"on": "AVAILABLE", "off": "CURRENT"})
 	fix1     = view.Fixed(1)
 	fix0     = view.Fixed(0)
-	stops    = []string{"var(--ice)", "var(--gold)", "var(--mars)"}
+	stops    = []string{"var(--level-low)", "var(--level-mid)", "var(--level-high)"}
 	// alarmed flags an open door/window in red (binary_sensor "on").
 	alarmed = view.Map2(map[string]string{"on": view.AlertClass})
 	hotCPU  = view.Hot(160) // server temps (°F): red above 160
@@ -299,7 +300,7 @@ func (s *Server) handleDash(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := dashData{frameData: frameData{
-		Title: p.Title, Banner: p.Banner, Site: siteLabel, Base: BasePath(r), Live: true,
+		Title: p.Title, Banner: p.Banner, Site: siteLabel, Theme: s.cfg.Theme, Base: BasePath(r), Live: true,
 		Panels: framePanels(p.Slug), Controls: s.pageControls(p),
 	}}
 	n, nc := 0, 0
@@ -537,7 +538,7 @@ type indexData struct {
 
 func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 	data := indexData{
-		frameData: frameData{Title: "Components", Banner: "LCARS • COMPONENTS", Site: siteLabel, Base: BasePath(r), Panels: framePanels("")},
+		frameData: frameData{Title: "Components", Banner: "LCARS • COMPONENTS", Site: siteLabel, Theme: s.cfg.Theme, Base: BasePath(r), Panels: framePanels("")},
 		Palette:   palette,
 		Gauges: []view.Gauge{
 			{Label: "Cold", Display: "58.0°F", Frac: 0.10, OK: true},

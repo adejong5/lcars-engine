@@ -73,6 +73,35 @@ func TestIndexDemoRenders(t *testing.T) {
 	}
 }
 
+// TestThemeOverlay: THEME adds the colour overlay stylesheet after the base
+// pair; unset serves the classic base only.
+func TestThemeOverlay(t *testing.T) {
+	log := slog.New(slog.NewTextHandler(io.Discard, nil))
+	rnd, err := render.New(false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	h := New(config.Config{Mock: true, Theme: "nemesis-blue"}, log, ha.NewMock(), rnd).Handler()
+	rr := httptest.NewRecorder()
+	h.ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/", nil))
+	if !strings.Contains(rr.Body.String(), `href="static/theme-nemesis-blue.css"`) {
+		t.Fatal("theme overlay link missing")
+	}
+
+	rr = httptest.NewRecorder()
+	newTestServer().ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/", nil))
+	if strings.Contains(rr.Body.String(), "static/theme-") {
+		t.Fatal("theme overlay linked with no THEME set")
+	}
+
+	// the overlay files themselves are served
+	rr = httptest.NewRecorder()
+	h.ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/static/theme-nemesis-blue.css", nil))
+	if rr.Code != http.StatusOK {
+		t.Fatalf("theme stylesheet not served: %d", rr.Code)
+	}
+}
+
 func TestIngressBase(t *testing.T) {
 	h := newTestServer()
 	req := httptest.NewRequest(http.MethodGet, "/", nil)

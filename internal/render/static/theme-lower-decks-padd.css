@@ -1,0 +1,71 @@
+/* LCARS theme: Lower Decks PADD — colour mapping over the classic base.
+   Load AFTER classic.compat.css; it re-declares only colour variables (the
+   base keeps layout, typography, and the responsive ladder). Extracted from
+   the LCARS Inspired Website Template "Lower Decks PADD" theme v24.2 by Jim
+   Robertus, www.TheLCARS.com (see LICENSE.md), 2026-07-07. Structural rule
+   differences in the upstream theme are NOT captured — this is the
+   theme-to-colour record only. */
+
+:root {
+	--alpha-blue: #58e;
+	--arctic-ice: #6cf;
+	--arctic-snow: #9cf;
+	--radioactive: #8ff;
+	--beta-blue: #79d;
+	--night-cloud: #344470;
+	--night-rain: #455580;
+	--sunset-red: #f30;
+	--left-frame-top-color: var(--alpha-blue);
+	--left-frame-color: var(--alpha-blue);
+	--corner-color-top: var(--alpha-blue);
+	--corner-color-bottom: var(--alpha-blue);
+	--panel-1-color: var(--night-rain);
+	--panel-4-color: var(--beta-blue);
+	--panel-5-color: var(--night-rain);
+	--panel-7-color: var(--night-cloud);
+	--panel-top-button-color: var(--beta-blue);
+	--bar-1-color: var(--alpha-blue);
+	--bar-2-color: var(--radioactive);
+	--bar-3-color: var(--beta-blue);
+	--bar-4-color: var(--alpha-blue);
+	--bar-5-color: var(--arctic-ice);
+	--bar-6-color: var(--alpha-blue);
+	--bar-7-color: var(--radioactive);
+	--bar-8-color: var(--beta-blue);
+	--bar-9-color: var(--alpha-blue);
+	--bar-10-color: var(--arctic-ice);
+	--font-color: var(--beta-blue);
+	--banner-color: var(--radioactive);
+	--h1-color: var(--arctic-ice);
+	--h2-color: var(--arctic-ice);
+	--h3-color: var(--arctic-ice);
+	--h4-color: var(--arctic-ice);
+	--light-color: #bdf;
+	--link-color: var(--beta-blue);
+	--code-color: var(--alpha-blue);
+	--nav-1-color: var(--alpha-blue);
+	--nav-2-color: var(--beta-blue);
+	--nav-3-color: var(--arctic-ice);
+	--nav-4-color: var(--night-rain);
+	--button-color: var(--alpha-blue);
+	--button-color-sidebar: var(--alpha-blue);
+	--lcars-bar-color: var(--night-rain);
+	--lcars-bar-start-color: var(--beta-blue);
+	--lcars-bar-end-color: var(--beta-blue);
+	--lcars-bar-text-color: var(--beta-blue);
+	--image-border-color: var(--beta-blue);
+	--primary-color: var(--night-rain);
+	--secondary-color: var(--beta-blue);
+	--accent-color: var(--arctic-snow);
+
+
+	/* Engine roles → this theme's decorative names (see components.compat.css
+	   :root for the role definitions; decoratives are never overwritten).
+	   Active accent per upstream's banner/accent use; hot end is the
+	   palette's lone red. */
+	--active-color: var(--radioactive);
+	--highlight-color: var(--light-color);
+	--level-low: var(--arctic-ice);
+	--level-mid: var(--radioactive);
+	--level-high: var(--sunset-red);
+}

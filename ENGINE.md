@@ -273,6 +273,16 @@ returns the updated button fragment.
   separates components — sidebar buttons, bezel pieces, readout notches, pill
   columns; `var(--gap-lg)` (0.5rem) separates rows of buttons/pills. Every
   gap in a new component should be one of the two.
+- **Decorative names are immutable; themes remap roles.** The palette names
+  (`--gold`, `--mars`, …) are fixed vocabulary — a theme never overwrites
+  them; it may add its own (`--tangerine`). Themes express themselves by
+  re-pointing ROLE variables (`--panel-7-color`, `--lcars-bar-color`, and the
+  engine roles `--active-color` / `--highlight-color` / `--level-low|mid|high`)
+  at decorative names. `static/theme-<name>.css` records the upstream
+  mappings for lower-decks, lower-decks-padd, nemesis-blue; select with the
+  `THEME` env var (unset = classic). In components, reference roles for
+  anything with meaning; reserve literal decorative names for deliberate
+  decoration.
 - **Avoid the class name `active`** — the theme styles it globally (accordion
   behaviour).
 - **Keep the footer attribution.** The template's terms require the

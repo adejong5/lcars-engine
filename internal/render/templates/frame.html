@@ -12,6 +12,7 @@
        components.compat.css our layer — go run ./tools/cssgen validates -->
   <link rel="stylesheet" href="static/classic.compat.css">
   <link rel="stylesheet" href="static/components.compat.css">
+  {{if .Theme}}<link rel="stylesheet" href="static/theme-{{.Theme}}.css">{{end}}
   <script src="static/htmx.min.js" defer></script>
   <script src="static/htmx-ext-sse.js" defer></script>
 </head>

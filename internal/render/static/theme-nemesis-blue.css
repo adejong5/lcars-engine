@@ -1,0 +1,100 @@
+/* LCARS theme: Nemesis Blue — colour mapping over the classic base.
+   Load AFTER classic.compat.css; it re-declares only colour variables (the
+   base keeps layout, typography, and the responsive ladder). Extracted from
+   the LCARS Inspired Website Template "Nemesis Blue" theme v24.2 by Jim
+   Robertus, www.TheLCARS.com (see LICENSE.md), 2026-07-07. Structural rule
+   differences in the upstream theme are NOT captured — this is the
+   theme-to-colour record only. */
+
+:root {
+	--cardinal: #c23;
+	--cool: #69f;
+	--evening: #26f;
+	--galaxy-gray: #52526a;
+	--ghost: #8bf;
+	--grape: #96c;
+	--honey: #fc9;
+	--lawn: #9a2;
+	--martian: #9c3;
+	--midnight: #23f;
+	--moonbeam: #ebf0ff;
+	--pumpkinshade: #f74;
+	--roseblush: #c66;
+	--tangerine: #f83;
+	--wheat: #ca8;
+	--left-frame-top-color: var(--evening);
+	--left-frame-color: var(--evening);
+	--corner-color-top: var(--evening);
+	--corner-color-bottom: var(--evening);
+	--panel-1-color: var(--wheat);
+	--panel-2-color: var(--moonbeam);
+	--panel-4-color: var(--evening);
+	--panel-5-color: var(--cool);
+	--panel-6-color: var(--evening);
+	--panel-7-color: var(--evening);
+	--panel-8-color: var(--moonbeam);
+	--panel-10-color: var(--evening);
+	--panel-top-button-color: var(--tangerine);
+	--bar-1-color: var(--evening);
+	--bar-2-color: var(--honey);
+	--bar-3-color: var(--cool);
+	--bar-4-color: var(--midnight);
+	--bar-5-color: var(--galaxy-gray);
+	--bar-6-color: var(--evening);
+	--bar-7-color: var(--tangerine);
+	--bar-8-color: var(--moonbeam);
+	--bar-9-color: var(--evening);
+	--bar-10-color: var(--galaxy-gray);
+	--section-2-color: var(--cool);
+	--pill-1-color: var(--evening);
+	--pill-2-color: var(--cool);
+	--pill-3-color: var(--cool);
+	--pill-4-color: var(--evening);
+	--pill-5-color: var(--midnight);
+	--pill-6-color: var(--midnight);
+	--pill-a1-color: var(--midnight);
+	--pill-a2-color: var(--cool);
+	--pill-a3-color: black;
+	--pill-a4-color: var(--evening);
+	--pill-a5-color: var(--tangerine);
+	--pill-a6-color: var(--honey);
+	--panel-11-color: var(--cool);
+	--panel-12-color: var(--cool);
+	--panel-13-color: var(--honey);
+	--panel-14-color: var(--evening);
+	--panel-15-color: var(--cool);
+	--font-color: var(--cool);
+	--banner-color: var(--ghost);
+	--data-cascade-color: var(--evening);
+	--light-color: var(--moonbeam);
+	--h1-color: var(--ghost);
+	--h2-color: var(--ghost);
+	--h3-color: var(--ghost);
+	--h4-color: var(--ghost);
+	--link-color: var(--cool);
+	--code-color: var(--martian);
+	--nav-1-color: var(--cool);
+	--nav-2-color: var(--roseblush);
+	--nav-3-color: var(--honey);
+	--nav-4-color: var(--cardinal);
+	--button-color: var(--cool);
+	--button-color-sidebar: var(--cool);
+	--lcars-bar-color: var(--evening);
+	--lcars-bar-start-color: var(--midnight);
+	--lcars-bar-end-color: var(--midnight);
+	--lcars-bar-text-color: var(--moonbeam);
+	--image-border-color: var(--cool);
+	--primary-color: var(--evening);
+	--secondary-color: var(--cool);
+	--accent-color: #adcaff;
+
+
+	/* Engine roles → this theme's decorative names (see components.compat.css
+	   :root for the role definitions; decoratives are never overwritten).
+	   Hot end is pumpkinshade so cardinal red stays reserved for alarms. */
+	--active-color: var(--tangerine);
+	--highlight-color: var(--moonbeam);
+	--level-low: var(--cool);
+	--level-mid: var(--tangerine);
+	--level-high: var(--pumpkinshade);
+}
